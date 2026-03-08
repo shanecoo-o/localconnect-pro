@@ -10,6 +10,8 @@ import WorkerMap from "@/components/map/WorkerMap";
 import { workers, categories } from "@/data/mockData";
 
 export default function Index() {
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [search, setSearch] = useState("");
