@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { TrendingUp, CheckCircle2, Star, Clock, Zap, Calendar } from "lucide-react";
+import { TrendingUp, CheckCircle2, Star, Clock, Zap, Calendar, Wrench } from "lucide-react";
 import { motion } from "framer-motion";
 import AppLayout from "@/components/layout/AppLayout";
 import { serviceRequests } from "@/data/mockData";
