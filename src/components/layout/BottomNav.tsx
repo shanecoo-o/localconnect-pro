@@ -31,7 +31,7 @@ const adminNav = [
   { path: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { path: "/admin/users", icon: Users, label: "Users" },
   { path: "/messages", icon: MessageSquare, label: "Chat" },
-  { path: "/admin/settings", icon: Settings, label: "Config" },
+  { path: "/profile", icon: User, label: "Perfil" },
 ];
 
 export default function BottomNav() {

@@ -1,4 +1,4 @@
-import { Home, Search, PlusCircle, MessageSquare, User, Wrench, LogIn, LogOut, LayoutDashboard, ClipboardList, Users, BarChart3, Settings, FolderOpen } from "lucide-react";
+import { Home, Search, PlusCircle, MessageSquare, User, Wrench, LogIn, LogOut, LayoutDashboard, ClipboardList, Users } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
