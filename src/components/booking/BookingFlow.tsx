@@ -281,10 +281,12 @@ function StepService({
   services,
   selected,
   onSelect,
+  filterLabel,
 }: {
   services: BookingService[];
   selected: BookingService | null;
   onSelect: (s: BookingService) => void;
+  filterLabel?: string;
 }) {
   // Group by category
   const grouped = useMemo(() => {
