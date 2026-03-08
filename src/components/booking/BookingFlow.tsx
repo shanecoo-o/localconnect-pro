@@ -361,7 +361,8 @@ function StepService({
             </div>
           </div>
         ))
-      ))}
+      )}
+
     </div>
   );
 }
