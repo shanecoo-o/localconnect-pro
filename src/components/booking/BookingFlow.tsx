@@ -302,6 +302,12 @@ function StepService({
   return (
     <div className="space-y-4">
       <h3 className="font-display text-lg font-bold text-foreground">Escolha o serviço</h3>
+      {filterLabel && (
+        <div className="flex items-center gap-2 rounded-xl bg-primary/10 border border-primary/20 px-3 py-2">
+          <Filter size={14} className="text-primary" />
+          <span className="text-xs font-medium text-primary">{filterLabel}</span>
+        </div>
+      )}
       {Array.from(grouped.entries()).map(([cat, svcs]) => (
         <div key={cat}>
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{cat}</p>
