@@ -3,10 +3,13 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 
-const publicItems = [
+const baseItems = [
   { path: "/", icon: Home, label: "Início" },
   { path: "/explore", icon: Search, label: "Explorar" },
   { path: "/new-request", icon: PlusCircle, label: "Novo Pedido" },
+];
+
+const workerItems = [
   { path: "/dashboard", icon: Wrench, label: "Dashboard" },
 ];
 
