@@ -12,6 +12,8 @@ import {
   CalendarIcon,
   ChevronRight,
   Sparkles,
+  Filter,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -33,8 +35,8 @@ import {
 } from "@/lib/slotEngine";
 
 const STEPS = [
-  "Serviço",
   "Profissional",
+  "Serviço",
   "Data",
   "Horário",
   "Resumo",
@@ -62,12 +64,18 @@ export default function BookingFlow() {
   const goNext = useCallback(() => { setDirection(1); setStep((s) => Math.min(s + 1, STEPS.length - 1)); }, []);
   const goBack = useCallback(() => { setDirection(-1); setStep((s) => Math.max(s - 1, 0)); }, []);
 
+  // Filter services based on selected professional's serviceIds
+  const filteredServices = useMemo(() => {
+    if (!selectedProfessional) return bookingServices;
+    return bookingServices.filter((s) => selectedProfessional.serviceIds.includes(s.id));
+  }, [selectedProfessional]);
+
   // Eligible professionals for selected service
   const eligiblePros = useMemo(
     () =>
       selectedService
         ? professionals.filter((p) => p.serviceIds.includes(selectedService.id))
-        : [],
+        : professionals,
     [selectedService]
   );
 
@@ -135,8 +143,8 @@ export default function BookingFlow() {
 
   const canProceed = () => {
     switch (step) {
-      case 0: return !!selectedService;
-      case 1: return anyProfessional || !!selectedProfessional;
+      case 0: return anyProfessional || !!selectedProfessional;
+      case 1: return !!selectedService;
       case 2: return !!selectedDate;
       case 3: return !!selectedSlot;
       default: return true;
@@ -186,26 +194,17 @@ export default function BookingFlow() {
           transition={{ duration: 0.2 }}
         >
           {step === 0 && (
-            <StepService
-              services={bookingServices}
-              selected={selectedService}
-              onSelect={(s) => {
-                setSelectedService(s);
-                setSelectedProfessional(null);
-                setAnyProfessional(false);
-                setSelectedDate(undefined);
-                setSelectedSlot(null);
-              }}
-            />
-          )}
-          {step === 1 && (
             <StepProfessional
-              professionals={eligiblePros}
+              professionals={professionals}
               selected={selectedProfessional}
               anySelected={anyProfessional}
               onSelect={(p) => {
                 setSelectedProfessional(p);
                 setAnyProfessional(false);
+                // Reset service if it doesn't match this professional
+                if (selectedService && !p.serviceIds.includes(selectedService.id)) {
+                  setSelectedService(null);
+                }
                 setSelectedSlot(null);
               }}
               onSelectAny={() => {
@@ -213,6 +212,18 @@ export default function BookingFlow() {
                 setSelectedProfessional(null);
                 setSelectedSlot(null);
               }}
+            />
+          )}
+          {step === 1 && (
+            <StepService
+              services={filteredServices}
+              selected={selectedService}
+              onSelect={(s) => {
+                setSelectedService(s);
+                setSelectedDate(undefined);
+                setSelectedSlot(null);
+              }}
+              filterLabel={selectedProfessional ? `Serviços de ${selectedProfessional.name}` : undefined}
             />
           )}
           {step === 2 && (
@@ -270,10 +281,12 @@ function StepService({
   services,
   selected,
   onSelect,
+  filterLabel,
 }: {
   services: BookingService[];
   selected: BookingService | null;
   onSelect: (s: BookingService) => void;
+  filterLabel?: string;
 }) {
   // Group by category
   const grouped = useMemo(() => {
@@ -289,6 +302,12 @@ function StepService({
   return (
     <div className="space-y-4">
       <h3 className="font-display text-lg font-bold text-foreground">Escolha o serviço</h3>
+      {filterLabel && (
+        <div className="flex items-center gap-2 rounded-xl bg-primary/10 border border-primary/20 px-3 py-2">
+          <Filter size={14} className="text-primary" />
+          <span className="text-xs font-medium text-primary">{filterLabel}</span>
+        </div>
+      )}
       {Array.from(grouped.entries()).map(([cat, svcs]) => (
         <div key={cat}>
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{cat}</p>
@@ -371,24 +390,39 @@ function StepProfessional({
           key={p.id}
           onClick={() => onSelect(p)}
           className={cn(
-            "w-full rounded-xl border p-3 text-left transition-all flex items-center gap-3",
+            "w-full rounded-xl border p-3 text-left transition-all",
             selected?.id === p.id
               ? "border-primary/50 bg-primary/10"
               : "border-border bg-card hover:bg-secondary"
           )}
         >
-          <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center">
-            <User size={18} className="text-muted-foreground" />
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center shrink-0">
+              <User size={18} className="text-muted-foreground" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-foreground text-sm">{p.name}</p>
+              <p className="text-xs text-muted-foreground">
+                {p.schedules.map((s) => s.dayOfWeek).join(", ")}
+              </p>
+            </div>
+            {selected?.id === p.id && (
+              <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center shrink-0">
+                <Check size={12} className="text-primary-foreground" />
+              </div>
+            )}
           </div>
-          <div className="flex-1">
-            <p className="font-medium text-foreground text-sm">{p.name}</p>
-            <p className="text-xs text-muted-foreground">
-              {p.schedules.map((s) => s.dayOfWeek).join(", ")}
-            </p>
-          </div>
-          {selected?.id === p.id && (
-            <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center shrink-0">
-              <Check size={12} className="text-primary-foreground" />
+          {/* Specialties */}
+          {p.specialties.length > 0 && (
+            <div className="mt-2 ml-13 flex flex-wrap gap-1.5">
+              {p.specialties.map((spec) => (
+                <span
+                  key={spec}
+                  className="rounded-full bg-secondary px-2.5 py-0.5 text-[10px] font-medium text-muted-foreground"
+                >
+                  {spec}
+                </span>
+              ))}
             </div>
           )}
         </button>

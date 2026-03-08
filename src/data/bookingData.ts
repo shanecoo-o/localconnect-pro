@@ -24,9 +24,10 @@ export interface Professional {
   name: string;
   avatar: string;
   serviceIds: string[];
+  specialties: string[]; // worker-defined specialties for filtering
   schedules: ProfessionalSchedule[];
-  bufferMinutes: number; // gap between appointments
-  blockedDates: string[]; // ISO dates fully blocked
+  bufferMinutes: number;
+  blockedDates: string[];
 }
 
 export type SlotStatus =
@@ -80,6 +81,7 @@ export const professionals: Professional[] = [
     name: "Carlos Mendes",
     avatar: "",
     serviceIds: ["s1", "s2"],
+    specialties: ["Reparação de fugas", "Instalação sanitária", "Desentupimentos", "Aquecimento central"],
     schedules: weekdaySchedule,
     bufferMinutes: 10,
     blockedDates: ["2026-03-12"],
@@ -89,6 +91,7 @@ export const professionals: Professional[] = [
     name: "Ana Sousa",
     avatar: "",
     serviceIds: ["s3", "s4"],
+    specialties: ["Limpeza profunda", "Pós-obra", "Escritórios", "Vidros"],
     schedules: [
       ...weekdaySchedule,
       { dayOfWeek: "Sab", startTime: "08:00", endTime: "13:00", breaks: [] },
@@ -101,6 +104,7 @@ export const professionals: Professional[] = [
     name: "Miguel Santos",
     avatar: "",
     serviceIds: ["s5", "s6"],
+    specialties: ["Instalação elétrica", "Disjuntores", "Iluminação", "Gerador"],
     schedules: weekdaySchedule,
     bufferMinutes: 10,
     blockedDates: [],
@@ -110,6 +114,7 @@ export const professionals: Professional[] = [
     name: "Teresa Gomes",
     avatar: "",
     serviceIds: ["s7"],
+    specialties: ["Pintura interior", "Pintura exterior", "Decorativa", "Textura"],
     schedules: weekdaySchedule,
     bufferMinutes: 15,
     blockedDates: [],
@@ -119,6 +124,7 @@ export const professionals: Professional[] = [
     name: "João Ferreira",
     avatar: "",
     serviceIds: ["s8"],
+    specialties: ["Móveis sob medida", "Portas", "Janelas", "Deck"],
     schedules: weekdaySchedule,
     bufferMinutes: 10,
     blockedDates: ["2026-03-10", "2026-03-11"],
