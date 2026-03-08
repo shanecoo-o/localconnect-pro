@@ -201,11 +201,13 @@ export default function BookingFlow() {
               onSelect={(p) => {
                 setSelectedProfessional(p);
                 setAnyProfessional(false);
-                // Reset service if it doesn't match this professional
                 if (selectedService && !p.serviceIds.includes(selectedService.id)) {
                   setSelectedService(null);
                 }
                 setSelectedSlot(null);
+                // Auto-advance to service step
+                setDirection(1);
+                setStep(1);
               }}
               onSelectAny={() => {
                 setAnyProfessional(true);
