@@ -64,12 +64,18 @@ export default function BookingFlow() {
   const goNext = useCallback(() => { setDirection(1); setStep((s) => Math.min(s + 1, STEPS.length - 1)); }, []);
   const goBack = useCallback(() => { setDirection(-1); setStep((s) => Math.max(s - 1, 0)); }, []);
 
+  // Filter services based on selected professional's serviceIds
+  const filteredServices = useMemo(() => {
+    if (!selectedProfessional) return bookingServices;
+    return bookingServices.filter((s) => selectedProfessional.serviceIds.includes(s.id));
+  }, [selectedProfessional]);
+
   // Eligible professionals for selected service
   const eligiblePros = useMemo(
     () =>
       selectedService
         ? professionals.filter((p) => p.serviceIds.includes(selectedService.id))
-        : [],
+        : professionals,
     [selectedService]
   );
 
