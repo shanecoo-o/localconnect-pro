@@ -143,8 +143,8 @@ export default function BookingFlow() {
 
   const canProceed = () => {
     switch (step) {
-      case 0: return !!selectedService;
-      case 1: return anyProfessional || !!selectedProfessional;
+      case 0: return anyProfessional || !!selectedProfessional;
+      case 1: return !!selectedService;
       case 2: return !!selectedDate;
       case 3: return !!selectedSlot;
       default: return true;
