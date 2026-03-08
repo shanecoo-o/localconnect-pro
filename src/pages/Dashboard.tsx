@@ -151,19 +151,59 @@ export default function Dashboard() {
             </div>
             <p className="text-xs text-muted-foreground mb-3">Horários</p>
             <div className="flex flex-wrap gap-2">
-              {hours.map((h) => (
-                <button
-                  key={h}
-                  onClick={() => toggleHour(h)}
-                  className={`rounded-xl px-4 py-2 text-sm font-medium flex items-center gap-1.5 transition-all ${
-                    selectedHours.includes(h)
-                      ? "bg-primary/15 text-primary border border-primary/30"
-                      : "bg-secondary text-muted-foreground border border-border hover:bg-surface-hover"
-                  }`}
-                >
-                  <Clock size={14} /> {h}
-                </button>
+              {customHours.map((h) => (
+                <div key={h} className="relative group">
+                  <button
+                    onClick={() => toggleHour(h)}
+                    className={`rounded-xl px-4 py-2 text-sm font-medium flex items-center gap-1.5 transition-all ${
+                      selectedHours.includes(h)
+                        ? "bg-primary/15 text-primary border border-primary/30"
+                        : "bg-secondary text-muted-foreground border border-border hover:bg-surface-hover"
+                    }`}
+                  >
+                    <Clock size={14} /> {h}
+                  </button>
+                  {!defaultHours.includes(h) && (
+                    <button
+                      onClick={() => removeCustomHour(h)}
+                      className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X size={10} />
+                    </button>
+                  )}
+                </div>
               ))}
+              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                <DialogTrigger asChild>
+                  <button className="rounded-xl px-4 py-2 text-sm font-medium flex items-center gap-1.5 border border-dashed border-border text-muted-foreground hover:bg-surface-hover transition-all">
+                    <Plus size={14} /> Adicionar
+                  </button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[340px]">
+                  <DialogHeader>
+                    <DialogTitle>Novo horário</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 pt-2">
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1">
+                        <label className="text-xs text-muted-foreground mb-1 block">Início</label>
+                        <Input type="time" value={newStart} onChange={(e) => setNewStart(e.target.value)} />
+                      </div>
+                      <span className="text-muted-foreground mt-4">—</span>
+                      <div className="flex-1">
+                        <label className="text-xs text-muted-foreground mb-1 block">Fim</label>
+                        <Input type="time" value={newEnd} onChange={(e) => setNewEnd(e.target.value)} />
+                      </div>
+                    </div>
+                    <button
+                      onClick={addCustomHour}
+                      className="w-full rounded-xl bg-gradient-primary py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity"
+                    >
+                      Adicionar horário
+                    </button>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
           </motion.div>
         </div>
