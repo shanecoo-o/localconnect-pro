@@ -1,24 +1,40 @@
-import { Home, Search, PlusCircle, MessageSquare, User, Settings, Wrench, LogIn, LogOut } from "lucide-react";
+import { Home, Search, PlusCircle, MessageSquare, User, Wrench, LogIn, LogOut, LayoutDashboard, ClipboardList, Users, BarChart3, Settings, FolderOpen } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
+import WorkerModeSwitch from "@/components/workers/WorkerModeSwitch";
 
-const baseItems = [
+const clientItems = [
   { path: "/", icon: Home, label: "Início" },
   { path: "/explore", icon: Search, label: "Explorar" },
   { path: "/new-request", icon: PlusCircle, label: "Novo Pedido" },
 ];
 
-const workerItems = [
-  { path: "/dashboard", icon: Wrench, label: "Dashboard" },
+const workerProfessionalItems = [
+  { path: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { path: "/worker-requests", icon: ClipboardList, label: "Pedidos" },
 ];
 
-const authItems = [
+const workerClientItems = [
+  { path: "/", icon: Home, label: "Início" },
+  { path: "/explore", icon: Search, label: "Explorar" },
+  { path: "/new-request", icon: PlusCircle, label: "Novo Pedido" },
+];
+
+const adminItems = [
+  { path: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { path: "/admin/users", icon: Users, label: "Utilizadores" },
+  { path: "/admin/categories", icon: FolderOpen, label: "Categorias" },
+  { path: "/admin/reports", icon: BarChart3, label: "Relatórios" },
+  { path: "/admin/settings", icon: Settings, label: "Configurações" },
+];
+
+const commonAuthItems = [
   { path: "/messages", icon: MessageSquare, label: "Mensagens" },
   { path: "/profile", icon: User, label: "Perfil" },
 ];
 
-function NavButton({ item, active, onClick }: { item: typeof baseItems[0]; active: boolean; onClick: () => void }) {
+function NavButton({ item, active, onClick }: { item: { path: string; icon: any; label: string }; active: boolean; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
@@ -44,7 +60,21 @@ function NavButton({ item, active, onClick }: { item: typeof baseItems[0]; activ
 export default function DesktopSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, user, logout, workerMode } = useAuth();
+
+  const getNavItems = () => {
+    if (!isAuthenticated || !user) return clientItems;
+    switch (user.role) {
+      case "admin":
+        return adminItems;
+      case "worker":
+        return workerMode === "professional" ? workerProfessionalItems : workerClientItems;
+      default:
+        return clientItems;
+    }
+  };
+
+  const navItems = getNavItems();
 
   return (
     <aside className="hidden md:flex fixed left-0 top-0 bottom-0 z-40 w-64 flex-col border-r border-border bg-card/80 backdrop-blur-xl">
@@ -58,17 +88,15 @@ export default function DesktopSidebar() {
         </div>
       </div>
 
-      <nav className="flex-1 px-3 py-4 space-y-1">
-        {baseItems.map((item) => (
-          <NavButton
-            key={item.path}
-            item={item}
-            active={location.pathname === item.path}
-            onClick={() => navigate(item.path)}
-          />
-        ))}
+      {/* Worker mode switch */}
+      {isAuthenticated && user?.role === "worker" && (
+        <div className="px-4 mb-2">
+          <WorkerModeSwitch />
+        </div>
+      )}
 
-        {isAuthenticated && user?.role !== "client" && workerItems.map((item) => (
+      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        {navItems.map((item) => (
           <NavButton
             key={item.path}
             item={item}
@@ -80,7 +108,7 @@ export default function DesktopSidebar() {
         {isAuthenticated && (
           <>
             <div className="my-3 mx-4 h-px bg-border" />
-            {authItems.map((item) => (
+            {commonAuthItems.map((item) => (
               <NavButton
                 key={item.path}
                 item={item}
@@ -101,7 +129,7 @@ export default function DesktopSidebar() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground truncate">{user?.name}</p>
-                <p className="text-xs text-muted-foreground truncate">{user?.role}</p>
+                <p className="text-xs text-muted-foreground truncate capitalize">{user?.role}</p>
               </div>
             </div>
             <button
