@@ -2,18 +2,47 @@ import { Home, Search, PlusCircle, MessageSquare, User, Settings, Wrench } from 
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
-const navItems = [
+const publicItems = [
   { path: "/", icon: Home, label: "Início" },
   { path: "/explore", icon: Search, label: "Explorar" },
   { path: "/new-request", icon: PlusCircle, label: "Novo Pedido" },
-  { path: "/messages", icon: MessageSquare, label: "Mensagens" },
   { path: "/dashboard", icon: Wrench, label: "Dashboard" },
+];
+
+const authItems = [
+  { path: "/messages", icon: MessageSquare, label: "Mensagens" },
   { path: "/profile", icon: User, label: "Perfil" },
 ];
+
+function NavButton({ item, active, onClick }: { item: typeof publicItems[0]; active: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`relative flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors ${
+        active
+          ? "bg-primary/10 text-primary"
+          : "text-muted-foreground hover:bg-surface-hover hover:text-foreground"
+      }`}
+    >
+      {active && (
+        <motion.div
+          layoutId="sidebarIndicator"
+          className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 rounded-r-full bg-primary"
+          transition={{ type: "spring", stiffness: 500, damping: 30 }}
+        />
+      )}
+      <item.icon size={20} />
+      <span>{item.label}</span>
+    </button>
+  );
+}
 
 export default function DesktopSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
+
+  // TODO: replace with real auth state
+  const isLoggedIn = false;
 
   return (
     <aside className="hidden md:flex fixed left-0 top-0 bottom-0 z-40 w-64 flex-col border-r border-border bg-card/80 backdrop-blur-xl">
@@ -28,30 +57,28 @@ export default function DesktopSidebar() {
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-1">
-        {navItems.map((item) => {
-          const active = location.pathname === item.path;
-          return (
-            <button
-              key={item.path}
-              onClick={() => navigate(item.path)}
-              className={`relative flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors ${
-                active
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-surface-hover hover:text-foreground"
-              }`}
-            >
-              {active && (
-                <motion.div
-                  layoutId="sidebarIndicator"
-                  className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 rounded-r-full bg-primary"
-                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                />
-              )}
-              <item.icon size={20} />
-              <span>{item.label}</span>
-            </button>
-          );
-        })}
+        {publicItems.map((item) => (
+          <NavButton
+            key={item.path}
+            item={item}
+            active={location.pathname === item.path}
+            onClick={() => navigate(item.path)}
+          />
+        ))}
+
+        {isLoggedIn && (
+          <>
+            <div className="my-3 mx-4 h-px bg-border" />
+            {authItems.map((item) => (
+              <NavButton
+                key={item.path}
+                item={item}
+                active={location.pathname === item.path}
+                onClick={() => navigate(item.path)}
+              />
+            ))}
+          </>
+        )}
       </nav>
 
       <div className="border-t border-border p-4">
