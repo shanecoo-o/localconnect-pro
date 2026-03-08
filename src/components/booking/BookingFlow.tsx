@@ -292,17 +292,6 @@ function StepService({
   onSelect: (s: BookingService) => void;
   filterLabel?: string;
 }) {
-  // Group by category
-  const grouped = useMemo(() => {
-    const map = new Map<string, BookingService[]>();
-    for (const s of services) {
-      const arr = map.get(s.category) || [];
-      arr.push(s);
-      map.set(s.category, arr);
-    }
-    return map;
-  }, [services]);
-
   // If filtered by professional, show flat list; otherwise group by category
   const grouped = useMemo(() => {
     if (filterLabel) return null;
