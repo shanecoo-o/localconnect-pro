@@ -18,7 +18,7 @@ const authItems = [
   { path: "/profile", icon: User, label: "Perfil" },
 ];
 
-function NavButton({ item, active, onClick }: { item: typeof publicItems[0]; active: boolean; onClick: () => void }) {
+function NavButton({ item, active, onClick }: { item: typeof baseItems[0]; active: boolean; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
