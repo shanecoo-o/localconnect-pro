@@ -12,6 +12,8 @@ import {
   CalendarIcon,
   ChevronRight,
   Sparkles,
+  Filter,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 
