@@ -1,13 +1,17 @@
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Star, MapPin, Clock, Zap, Phone, MessageSquare, Calendar, CheckCircle2, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
 import AppLayout from "@/components/layout/AppLayout";
 import { workers } from "@/data/mockData";
+import ServiceRequestDialog from "@/components/workers/ServiceRequestDialog";
+import { toast } from "sonner";
 
 export default function WorkerProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
   const worker = workers.find((w) => w.id === id);
+  const [serviceDialogOpen, setServiceDialogOpen] = useState(false);
 
   if (!worker) {
     return (
