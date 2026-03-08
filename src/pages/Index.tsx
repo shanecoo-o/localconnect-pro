@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { Map, List, Search, Bell, Wrench } from "lucide-react";
+import { Map, List, Search, Bell, Wrench, LogIn } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import AppLayout from "@/components/layout/AppLayout";
 import WorkerCard from "@/components/workers/WorkerCard";
