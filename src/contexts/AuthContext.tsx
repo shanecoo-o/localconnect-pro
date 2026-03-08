@@ -21,10 +21,18 @@ interface AuthState {
 
 const AuthContext = createContext<AuthState | null>(null);
 
+const defaultAuth: AuthState = {
+  user: null,
+  isAuthenticated: false,
+  isLoading: false,
+  login: async () => {},
+  register: async () => {},
+  logout: () => {},
+};
+
 export function useAuth() {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
-  return ctx;
+  return ctx ?? defaultAuth;
 }
 
 // Mock users for MVP
