@@ -16,7 +16,7 @@ export default function WorkerCard({ worker, index = 0 }: { worker: Worker; inde
     >
       <div className="flex items-start gap-2.5 md:gap-3">
         <div className="relative">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-secondary font-display text-xl font-bold text-primary">
+          <div className="flex h-11 w-11 md:h-14 md:w-14 items-center justify-center rounded-xl md:rounded-2xl bg-secondary font-display text-lg md:text-xl font-bold text-primary">
             {worker.name.charAt(0)}
           </div>
           {worker.online && (
