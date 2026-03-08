@@ -1,8 +1,11 @@
 import { useState } from "react";
-import { TrendingUp, CheckCircle2, Star, Clock, Zap, Calendar, Wrench } from "lucide-react";
+import { TrendingUp, CheckCircle2, Star, Clock, Zap, Calendar, Wrench, Plus, X } from "lucide-react";
 import { motion } from "framer-motion";
 import AppLayout from "@/components/layout/AppLayout";
 import { serviceRequests } from "@/data/mockData";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 
 const stats = [
   { label: "Pedidos esta semana", value: "12", icon: Zap, change: "+3" },
@@ -12,11 +15,35 @@ const stats = [
 ];
 
 const days = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sab", "Dom"];
-const hours = ["08:00-12:00", "14:00-18:00", "19:00-22:00"];
+const defaultHours = ["08:00-12:00", "14:00-18:00", "19:00-22:00"];
 
 export default function Dashboard() {
   const [selectedDays, setSelectedDays] = useState(["Seg", "Ter", "Qua", "Qui", "Sex"]);
+  const [customHours, setCustomHours] = useState<string[]>(defaultHours);
   const [selectedHours, setSelectedHours] = useState(["08:00-12:00", "14:00-18:00"]);
+  const [newStart, setNewStart] = useState("08:00");
+  const [newEnd, setNewEnd] = useState("12:00");
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  const addCustomHour = () => {
+    const slot = `${newStart}-${newEnd}`;
+    if (newStart >= newEnd) {
+      toast.error("Hora de início deve ser antes da hora de fim");
+      return;
+    }
+    if (customHours.includes(slot)) {
+      toast.error("Este horário já existe");
+      return;
+    }
+    setCustomHours((prev) => [...prev, slot]);
+    setDialogOpen(false);
+    toast.success(`Horário ${slot} adicionado`);
+  };
+
+  const removeCustomHour = (h: string) => {
+    setCustomHours((prev) => prev.filter((x) => x !== h));
+    setSelectedHours((prev) => prev.filter((x) => x !== h));
+  };
 
   const toggleDay = (d: string) =>
     setSelectedDays((prev) => (prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]));
@@ -124,19 +151,59 @@ export default function Dashboard() {
             </div>
             <p className="text-xs text-muted-foreground mb-3">Horários</p>
             <div className="flex flex-wrap gap-2">
-              {hours.map((h) => (
-                <button
-                  key={h}
-                  onClick={() => toggleHour(h)}
-                  className={`rounded-xl px-4 py-2 text-sm font-medium flex items-center gap-1.5 transition-all ${
-                    selectedHours.includes(h)
-                      ? "bg-primary/15 text-primary border border-primary/30"
-                      : "bg-secondary text-muted-foreground border border-border hover:bg-surface-hover"
-                  }`}
-                >
-                  <Clock size={14} /> {h}
-                </button>
+              {customHours.map((h) => (
+                <div key={h} className="relative group">
+                  <button
+                    onClick={() => toggleHour(h)}
+                    className={`rounded-xl px-4 py-2 text-sm font-medium flex items-center gap-1.5 transition-all ${
+                      selectedHours.includes(h)
+                        ? "bg-primary/15 text-primary border border-primary/30"
+                        : "bg-secondary text-muted-foreground border border-border hover:bg-surface-hover"
+                    }`}
+                  >
+                    <Clock size={14} /> {h}
+                  </button>
+                  {!defaultHours.includes(h) && (
+                    <button
+                      onClick={() => removeCustomHour(h)}
+                      className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X size={10} />
+                    </button>
+                  )}
+                </div>
               ))}
+              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                <DialogTrigger asChild>
+                  <button className="rounded-xl px-4 py-2 text-sm font-medium flex items-center gap-1.5 border border-dashed border-border text-muted-foreground hover:bg-surface-hover transition-all">
+                    <Plus size={14} /> Adicionar
+                  </button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[340px]">
+                  <DialogHeader>
+                    <DialogTitle>Novo horário</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 pt-2">
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1">
+                        <label className="text-xs text-muted-foreground mb-1 block">Início</label>
+                        <Input type="time" value={newStart} onChange={(e) => setNewStart(e.target.value)} />
+                      </div>
+                      <span className="text-muted-foreground mt-4">—</span>
+                      <div className="flex-1">
+                        <label className="text-xs text-muted-foreground mb-1 block">Fim</label>
+                        <Input type="time" value={newEnd} onChange={(e) => setNewEnd(e.target.value)} />
+                      </div>
+                    </div>
+                    <button
+                      onClick={addCustomHour}
+                      className="w-full rounded-xl bg-gradient-primary py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity"
+                    >
+                      Adicionar horário
+                    </button>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
           </motion.div>
         </div>
