@@ -205,9 +205,11 @@ export default function BookingFlow() {
                   setSelectedService(null);
                 }
                 setSelectedSlot(null);
-                // Auto-advance to service step
-                setDirection(1);
-                setStep(1);
+                // Auto-advance to service step after a tick so AnimatePresence picks up the change
+                setTimeout(() => {
+                  setDirection(1);
+                  setStep(1);
+                }, 150);
               }}
               onSelectAny={() => {
                 setAnyProfessional(true);
