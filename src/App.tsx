@@ -15,6 +15,8 @@ import Profile from "./pages/Profile";
 import Booking from "./pages/Booking";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import WorkerRequests from "./pages/WorkerRequests";
+import AdminUsers from "./pages/AdminUsers";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,12 +33,17 @@ const App = () => (
             <Route path="/worker/:id" element={<WorkerProfile />} />
             <Route path="/new-request" element={<NewRequest />} />
             <Route path="/explore" element={<Explore />} />
-            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/booking" element={<Booking />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/worker-requests" element={<ProtectedRoute><WorkerRequests /></ProtectedRoute>} />
+            <Route path="/admin/users" element={<ProtectedRoute><AdminUsers /></ProtectedRoute>} />
+            <Route path="/admin/categories" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/admin/reports" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/admin/settings" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
