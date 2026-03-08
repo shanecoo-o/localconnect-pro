@@ -1,14 +1,21 @@
-import { useState, useRef, useEffect } from "react";
-import { MessageSquare, ArrowLeft, Send, Phone, MoreVertical, Image } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { MessageSquare, ArrowLeft, Send, Phone, MoreVertical, Image as ImageIcon, Paperclip, X, FileText } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import AppLayout from "@/components/layout/AppLayout";
-import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
+
+interface Attachment {
+  name: string;
+  type: "image" | "file";
+  url: string;
+}
 
 interface Message {
   id: string;
   text: string;
   fromMe: boolean;
   time: string;
+  attachment?: Attachment;
 }
 
 interface Conversation {
@@ -22,7 +29,7 @@ interface Conversation {
   messages: Message[];
 }
 
-const conversations: Conversation[] = [
+const initialConversations: Conversation[] = [
   {
     id: "1", name: "Maria Silva", lastMsg: "Ok, combinado para amanhã às 9h", time: "10:30", unread: 2, category: "Canalizador", online: true,
     messages: [
@@ -53,12 +60,25 @@ const conversations: Conversation[] = [
   },
 ];
 
+const autoReplies = [
+  "Ok, entendido! 👍",
+  "Perfeito, vou tratar disso.",
+  "Obrigado pela informação!",
+  "Combinado, até já!",
+  "Vou verificar e já lhe digo.",
+  "Pode contar comigo 💪",
+  "Recebido! Respondo em breve.",
+];
+
 export default function Messages() {
   const [activeChat, setActiveChat] = useState<string | null>(null);
-  const [chats, setChats] = useState(conversations);
+  const [chats, setChats] = useState<Conversation[]>(initialConversations);
   const [input, setInput] = useState("");
+  const [pendingAttachment, setPendingAttachment] = useState<Attachment | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   const active = chats.find((c) => c.id === activeChat);
 
@@ -66,23 +86,73 @@ export default function Messages() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [active?.messages.length]);
 
+  // Simulated auto-reply with push notification
+  const simulateReply = useCallback((chatId: string, senderName: string) => {
+    const delay = 2000 + Math.random() * 4000;
+    setTimeout(() => {
+      const reply: Message = {
+        id: `m${Date.now()}`,
+        text: autoReplies[Math.floor(Math.random() * autoReplies.length)],
+        fromMe: false,
+        time: new Date().toLocaleTimeString("pt", { hour: "2-digit", minute: "2-digit" }),
+      };
+      setChats((prev) =>
+        prev.map((c) =>
+          c.id === chatId
+            ? {
+                ...c,
+                messages: [...c.messages, reply],
+                lastMsg: reply.text,
+                time: reply.time,
+                unread: c.id === chatId ? c.unread : c.unread + 1,
+              }
+            : c
+        )
+      );
+      // Push notification toast
+      toast.message(senderName, {
+        description: reply.text,
+        duration: 4000,
+        icon: <MessageSquare size={16} className="text-primary" />,
+      });
+    }, delay);
+  }, []);
+
   const sendMessage = () => {
-    if (!input.trim() || !activeChat) return;
+    if ((!input.trim() && !pendingAttachment) || !activeChat) return;
     const newMsg: Message = {
       id: `m${Date.now()}`,
       text: input.trim(),
       fromMe: true,
       time: new Date().toLocaleTimeString("pt", { hour: "2-digit", minute: "2-digit" }),
+      attachment: pendingAttachment || undefined,
     };
     setChats((prev) =>
       prev.map((c) =>
         c.id === activeChat
-          ? { ...c, messages: [...c.messages, newMsg], lastMsg: newMsg.text, time: newMsg.time }
+          ? { ...c, messages: [...c.messages, newMsg], lastMsg: pendingAttachment ? `📎 ${pendingAttachment.name}` : newMsg.text, time: newMsg.time }
           : c
       )
     );
     setInput("");
+    setPendingAttachment(null);
     inputRef.current?.focus();
+
+    // Trigger simulated reply
+    const chat = chats.find((c) => c.id === activeChat);
+    if (chat) simulateReply(activeChat, chat.name);
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>, type: "image" | "file") => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 20 * 1024 * 1024) {
+      toast.error("Ficheiro demasiado grande (máx. 20MB)");
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    setPendingAttachment({ name: file.name, type, url });
+    e.target.value = "";
   };
 
   // ─── Conversation List ───
@@ -101,7 +171,6 @@ export default function Messages() {
             transition={{ delay: i * 0.04 }}
             onClick={() => {
               setActiveChat(c.id);
-              // Clear unread
               setChats((prev) => prev.map((ch) => (ch.id === c.id ? { ...ch, unread: 0 } : ch)));
             }}
             className={`flex w-full items-center gap-3 rounded-2xl p-3 text-left transition-colors ${
@@ -184,7 +253,12 @@ export default function Messages() {
         {/* Messages */}
         <div className="flex-1 overflow-y-auto px-3 py-4 md:px-4 space-y-2">
           {active.messages.map((msg) => (
-            <div key={msg.id} className={`flex ${msg.fromMe ? "justify-end" : "justify-start"}`}>
+            <motion.div
+              key={msg.id}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className={`flex ${msg.fromMe ? "justify-end" : "justify-start"}`}
+            >
               <div
                 className={`max-w-[80%] md:max-w-[65%] rounded-2xl px-3.5 py-2.5 ${
                   msg.fromMe
@@ -192,23 +266,89 @@ export default function Messages() {
                     : "bg-secondary text-foreground rounded-bl-md"
                 }`}
               >
-                <p className="text-sm leading-relaxed">{msg.text}</p>
+                {/* Attachment preview */}
+                {msg.attachment && (
+                  <div className="mb-2">
+                    {msg.attachment.type === "image" ? (
+                      <img
+                        src={msg.attachment.url}
+                        alt={msg.attachment.name}
+                        className="rounded-xl max-h-48 w-auto object-cover"
+                      />
+                    ) : (
+                      <div className={`flex items-center gap-2 rounded-xl p-2.5 ${
+                        msg.fromMe ? "bg-primary-foreground/10" : "bg-muted"
+                      }`}>
+                        <FileText size={18} className={msg.fromMe ? "text-primary-foreground/70" : "text-muted-foreground"} />
+                        <span className="text-xs truncate">{msg.attachment.name}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {msg.text && <p className="text-sm leading-relaxed">{msg.text}</p>}
                 <p className={`text-[9px] mt-1 text-right ${
                   msg.fromMe ? "text-primary-foreground/60" : "text-muted-foreground"
                 }`}>
                   {msg.time}
                 </p>
               </div>
-            </div>
+            </motion.div>
           ))}
           <div ref={messagesEndRef} />
         </div>
 
+        {/* Pending attachment preview */}
+        <AnimatePresence>
+          {pendingAttachment && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="border-t border-border bg-secondary/50 px-3 md:px-4 overflow-hidden"
+            >
+              <div className="flex items-center gap-3 py-2.5">
+                {pendingAttachment.type === "image" ? (
+                  <img src={pendingAttachment.url} alt="" className="h-12 w-12 rounded-lg object-cover" />
+                ) : (
+                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted">
+                    <FileText size={20} className="text-muted-foreground" />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium text-foreground truncate">{pendingAttachment.name}</p>
+                  <p className="text-[10px] text-muted-foreground capitalize">{pendingAttachment.type === "image" ? "Imagem" : "Ficheiro"}</p>
+                </div>
+                <button
+                  onClick={() => setPendingAttachment(null)}
+                  className="flex h-7 w-7 items-center justify-center rounded-lg hover:bg-surface-hover transition-colors"
+                >
+                  <X size={14} className="text-muted-foreground" />
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Input bar */}
-        <div className="sticky bottom-0 border-t border-border bg-background/90 backdrop-blur-xl px-3 py-2.5 md:px-4 md:py-3 pb-safe">
-          <div className="flex items-center gap-2">
-            <button className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border bg-secondary hover:bg-surface-hover transition-colors">
-              <Image size={16} className="text-muted-foreground" />
+        <div className="sticky bottom-0 border-t border-border bg-background/90 backdrop-blur-xl px-3 py-2.5 md:px-4 md:py-3">
+          <div className="flex items-center gap-1.5 md:gap-2">
+            {/* Hidden file inputs */}
+            <input ref={imageInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => handleFileSelect(e, "image")} />
+            <input ref={fileInputRef} type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.zip" className="hidden" onChange={(e) => handleFileSelect(e, "file")} />
+
+            <button
+              onClick={() => imageInputRef.current?.click()}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border bg-secondary hover:bg-surface-hover transition-colors"
+              title="Enviar imagem"
+            >
+              <ImageIcon size={16} className="text-muted-foreground" />
+            </button>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-border bg-secondary hover:bg-surface-hover transition-colors"
+              title="Enviar ficheiro"
+            >
+              <Paperclip size={16} className="text-muted-foreground" />
             </button>
             <input
               ref={inputRef}
@@ -217,11 +357,11 @@ export default function Messages() {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && sendMessage()}
               placeholder="Escrever mensagem..."
-              className="flex-1 rounded-xl border border-border bg-secondary px-3.5 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 h-9 md:h-10"
+              className="flex-1 min-w-0 rounded-xl border border-border bg-secondary px-3.5 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 h-9 md:h-10"
             />
             <button
               onClick={sendMessage}
-              disabled={!input.trim()}
+              disabled={!input.trim() && !pendingAttachment}
               className="flex h-9 w-9 md:h-10 md:w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-primary text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-40"
             >
               <Send size={16} />
