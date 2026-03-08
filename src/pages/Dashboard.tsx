@@ -1,11 +1,15 @@
 import { useState } from "react";
-import { TrendingUp, CheckCircle2, Star, Clock, Zap, Calendar, Wrench, Plus, X } from "lucide-react";
-import { motion } from "framer-motion";
+import { format } from "date-fns";
+import { pt } from "date-fns/locale";
+import { TrendingUp, CheckCircle2, Star, Clock, Zap, Calendar, Wrench, Plus, X, Play, XCircle, MessageSquare, RotateCcw, ChevronDown, MapPin } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import AppLayout from "@/components/layout/AppLayout";
-import { serviceRequests } from "@/data/mockData";
+import { serviceRequests, type ServiceRequest } from "@/data/mockData";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Calendar as CalendarUI } from "@/components/ui/calendar";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 const stats = [
   { label: "Pedidos esta semana", value: "12", icon: Zap, change: "+3" },
@@ -17,6 +21,14 @@ const stats = [
 const days = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sab", "Dom"];
 const defaultHours = ["08:00-12:00", "14:00-18:00", "19:00-22:00"];
 
+const timeSlots = [
+  "08:00", "08:30", "09:00", "09:30", "10:00", "10:30",
+  "11:00", "11:30", "12:00", "14:00", "14:30", "15:00",
+  "15:30", "16:00", "16:30", "17:00", "17:30", "18:00",
+];
+
+type RequestStatus = ServiceRequest["status"];
+
 export default function Dashboard() {
   const [selectedDays, setSelectedDays] = useState(["Seg", "Ter", "Qua", "Qui", "Sex"]);
   const [customHours, setCustomHours] = useState<string[]>(defaultHours);
@@ -24,6 +36,13 @@ export default function Dashboard() {
   const [newStart, setNewStart] = useState("08:00");
   const [newEnd, setNewEnd] = useState("12:00");
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  // Request management state
+  const [requests, setRequests] = useState<ServiceRequest[]>(serviceRequests);
+  const [expandedRequest, setExpandedRequest] = useState<string | null>(null);
+  const [rescheduleOpen, setRescheduleOpen] = useState<string | null>(null);
+  const [rescheduleDate, setRescheduleDate] = useState<Date | undefined>();
+  const [rescheduleTime, setRescheduleTime] = useState<string | null>(null);
 
   const addCustomHour = () => {
     const slot = `${newStart}-${newEnd}`;
@@ -50,9 +69,62 @@ export default function Dashboard() {
   const toggleHour = (h: string) =>
     setSelectedHours((prev) => (prev.includes(h) ? prev.filter((x) => x !== h) : [...prev, h]));
 
-  const incomingRequests = serviceRequests.filter(
+  // Filter incoming requests
+  const incomingRequests = requests.filter(
     (r) => r.status === "pending_broadcast" || r.status === "accepted" || r.status === "in_progress"
   );
+
+  // Update request status
+  const updateRequestStatus = (id: string, newStatus: RequestStatus) => {
+    setRequests((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, status: newStatus } : r))
+    );
+    const statusLabels: Record<RequestStatus, string> = {
+      pending_broadcast: "Novo",
+      accepted: "Aceite",
+      in_progress: "Em curso",
+      completed: "Concluído",
+      cancelled: "Cancelado",
+      expired: "Expirado",
+    };
+    toast.success(`Pedido ${statusLabels[newStatus].toLowerCase()}!`);
+    setExpandedRequest(null);
+  };
+
+  // Handle reschedule
+  const handleReschedule = (id: string) => {
+    if (!rescheduleDate || !rescheduleTime) {
+      toast.error("Selecione data e hora");
+      return;
+    }
+    setRequests((prev) =>
+      prev.map((r) =>
+        r.id === id
+          ? {
+              ...r,
+              requestedDate: format(rescheduleDate, "d MMM", { locale: pt }),
+              timeWindow: rescheduleTime,
+            }
+          : r
+      )
+    );
+    toast.success("Horário remarcado com sucesso!");
+    setRescheduleOpen(null);
+    setRescheduleDate(undefined);
+    setRescheduleTime(null);
+  };
+
+  const getStatusBadge = (status: RequestStatus) => {
+    const config: Record<RequestStatus, { label: string; class: string }> = {
+      pending_broadcast: { label: "Novo", class: "bg-amber-500/15 text-amber-400" },
+      accepted: { label: "Aceite", class: "bg-emerald-500/15 text-emerald-400" },
+      in_progress: { label: "Em curso", class: "bg-primary/15 text-primary" },
+      completed: { label: "Concluído", class: "bg-muted text-muted-foreground" },
+      cancelled: { label: "Cancelado", class: "bg-destructive/15 text-destructive" },
+      expired: { label: "Expirado", class: "bg-muted text-muted-foreground" },
+    };
+    return config[status];
+  };
 
   return (
     <AppLayout>
@@ -92,40 +164,214 @@ export default function Dashboard() {
           </div>
 
           {/* Incoming requests */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="rounded-2xl border border-border bg-card p-5">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="rounded-2xl border border-border bg-card p-4 md:p-5">
             <h3 className="font-display font-semibold text-foreground mb-3 flex items-center gap-2">
               <Zap size={18} className="text-primary" /> Pedidos Recebidos
+              {incomingRequests.length > 0 && (
+                <span className="ml-auto rounded-full bg-primary/15 px-2 py-0.5 text-xs font-semibold text-primary">
+                  {incomingRequests.length}
+                </span>
+              )}
             </h3>
-            <div className="space-y-3">
-              {incomingRequests.map((req) => (
-                <div key={req.id} className="rounded-xl border border-border bg-secondary p-4">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="font-medium text-foreground text-sm">{req.category}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{req.clientName} • {req.location.bairro}</p>
-                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{req.description}</p>
-                    </div>
-                    <span className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-semibold ${
-                      req.status === "pending_broadcast" ? "bg-amber-500/15 text-amber-400" :
-                      req.status === "in_progress" ? "bg-primary/15 text-primary" :
-                      "bg-emerald-500/15 text-emerald-400"
-                    }`}>
-                      {req.status === "pending_broadcast" ? "Novo" : req.status === "in_progress" ? "Em curso" : "Aceite"}
-                    </span>
-                  </div>
-                  {req.status === "pending_broadcast" && (
-                    <div className="mt-3 flex gap-2">
-                      <button className="flex-1 rounded-xl bg-gradient-primary py-2 text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity">
-                        Aceitar
+
+            {incomingRequests.length === 0 ? (
+              <div className="text-center py-8">
+                <Zap size={32} className="mx-auto text-muted-foreground/30 mb-2" />
+                <p className="text-sm text-muted-foreground">Sem pedidos pendentes</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {incomingRequests.map((req) => {
+                  const statusBadge = getStatusBadge(req.status);
+                  const isExpanded = expandedRequest === req.id;
+                  const isRescheduling = rescheduleOpen === req.id;
+
+                  return (
+                    <div key={req.id} className="rounded-xl border border-border bg-secondary overflow-hidden">
+                      {/* Main info row - clickable on mobile */}
+                      <button
+                        onClick={() => setExpandedRequest(isExpanded ? null : req.id)}
+                        className="w-full p-3 md:p-4 text-left"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <p className="font-medium text-foreground text-sm">{req.category}</p>
+                              <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${statusBadge.class}`}>
+                                {statusBadge.label}
+                              </span>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">{req.clientName} • {req.location.bairro}</p>
+                            <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{req.description}</p>
+                            <div className="flex items-center gap-3 mt-2 text-[11px] text-muted-foreground">
+                              <span className="flex items-center gap-1"><Clock size={11} /> {req.timeWindow}</span>
+                              <span className="flex items-center gap-1"><Calendar size={11} /> {req.requestedDate}</span>
+                            </div>
+                          </div>
+                          <ChevronDown
+                            size={16}
+                            className={cn(
+                              "shrink-0 text-muted-foreground transition-transform md:hidden",
+                              isExpanded && "rotate-180"
+                            )}
+                          />
+                        </div>
                       </button>
-                      <button className="flex-1 rounded-xl border border-border bg-secondary py-2 text-sm font-medium text-muted-foreground hover:bg-surface-hover transition-colors">
-                        Recusar
-                      </button>
+
+                      {/* Expanded actions - mobile accordion / desktop always visible */}
+                      <AnimatePresence>
+                        {(isExpanded || typeof window !== "undefined") && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className={cn(
+                              "border-t border-border overflow-hidden",
+                              !isExpanded && "hidden md:block"
+                            )}
+                          >
+                            <div className="p-3 md:p-4 space-y-3">
+                              {/* Actions based on status */}
+                              {req.status === "pending_broadcast" && (
+                                <div className="flex flex-col sm:flex-row gap-2">
+                                  <button
+                                    onClick={() => updateRequestStatus(req.id, "accepted")}
+                                    className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-gradient-primary py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity active:scale-[0.98] min-h-[44px]"
+                                  >
+                                    <CheckCircle2 size={16} /> Aceitar
+                                  </button>
+                                  <div className="flex gap-2">
+                                    <button
+                                      onClick={() => setRescheduleOpen(req.id)}
+                                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 rounded-xl border border-border bg-card py-2.5 px-4 text-sm font-medium text-foreground hover:bg-surface-hover transition-colors active:scale-[0.98] min-h-[44px]"
+                                    >
+                                      <RotateCcw size={14} />
+                                      <span className="sm:hidden">Remarcar</span>
+                                    </button>
+                                    <button
+                                      onClick={() => updateRequestStatus(req.id, "cancelled")}
+                                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 rounded-xl border border-destructive/30 bg-destructive/10 py-2.5 px-4 text-sm font-medium text-destructive hover:bg-destructive/20 transition-colors active:scale-[0.98] min-h-[44px]"
+                                    >
+                                      <XCircle size={14} />
+                                      <span className="sm:hidden">Recusar</span>
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+
+                              {req.status === "accepted" && (
+                                <div className="flex flex-col sm:flex-row gap-2">
+                                  <button
+                                    onClick={() => updateRequestStatus(req.id, "in_progress")}
+                                    className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-gradient-primary py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity active:scale-[0.98] min-h-[44px]"
+                                  >
+                                    <Play size={16} /> Iniciar Serviço
+                                  </button>
+                                  <div className="flex gap-2">
+                                    <button
+                                      onClick={() => setRescheduleOpen(req.id)}
+                                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 rounded-xl border border-border bg-card py-2.5 px-4 text-sm font-medium text-foreground hover:bg-surface-hover transition-colors active:scale-[0.98] min-h-[44px]"
+                                    >
+                                      <RotateCcw size={14} />
+                                      <span className="sm:hidden">Remarcar</span>
+                                    </button>
+                                    <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 rounded-xl border border-border bg-card py-2.5 px-4 text-sm font-medium text-foreground hover:bg-surface-hover transition-colors active:scale-[0.98] min-h-[44px]">
+                                      <MessageSquare size={14} />
+                                      <span className="sm:hidden">Chat</span>
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+
+                              {req.status === "in_progress" && (
+                                <div className="flex flex-col sm:flex-row gap-2">
+                                  <button
+                                    onClick={() => updateRequestStatus(req.id, "completed")}
+                                    className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-emerald-500/15 border border-emerald-500/30 py-2.5 text-sm font-semibold text-emerald-400 hover:bg-emerald-500/25 transition-colors active:scale-[0.98] min-h-[44px]"
+                                  >
+                                    <CheckCircle2 size={16} /> Concluir Serviço
+                                  </button>
+                                  <button className="sm:flex-none flex items-center justify-center gap-2 rounded-xl border border-border bg-card py-2.5 px-4 text-sm font-medium text-foreground hover:bg-surface-hover transition-colors active:scale-[0.98] min-h-[44px]">
+                                    <MessageSquare size={14} />
+                                    <span className="sm:hidden">Contactar Cliente</span>
+                                    <span className="hidden sm:inline">Chat</span>
+                                  </button>
+                                </div>
+                              )}
+
+                              {/* Reschedule dialog inline */}
+                              <AnimatePresence>
+                                {isRescheduling && (
+                                  <motion.div
+                                    initial={{ height: 0, opacity: 0 }}
+                                    animate={{ height: "auto", opacity: 1 }}
+                                    exit={{ height: 0, opacity: 0 }}
+                                    className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-4"
+                                  >
+                                    <div className="flex items-center justify-between">
+                                      <h4 className="text-sm font-semibold text-foreground">Remarcar horário</h4>
+                                      <button
+                                        onClick={() => setRescheduleOpen(null)}
+                                        className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-secondary transition-colors"
+                                      >
+                                        <X size={14} className="text-muted-foreground" />
+                                      </button>
+                                    </div>
+
+                                    {/* Date picker */}
+                                    <div className="rounded-xl border border-border bg-card p-2 flex justify-center">
+                                      <CalendarUI
+                                        mode="single"
+                                        selected={rescheduleDate}
+                                        onSelect={setRescheduleDate}
+                                        disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                                        className="p-1 pointer-events-auto"
+                                      />
+                                    </div>
+
+                                    {/* Time slots */}
+                                    {rescheduleDate && (
+                                      <div>
+                                        <p className="text-xs text-muted-foreground mb-2">Escolha o horário</p>
+                                        <div className="grid grid-cols-4 sm:grid-cols-6 gap-1.5">
+                                          {timeSlots.map((t) => (
+                                            <button
+                                              key={t}
+                                              onClick={() => setRescheduleTime(t)}
+                                              className={cn(
+                                                "rounded-lg px-2 py-2 text-xs font-medium text-center transition-all border",
+                                                rescheduleTime === t
+                                                  ? "border-primary bg-primary/15 text-primary"
+                                                  : "border-border bg-card text-foreground hover:bg-secondary"
+                                              )}
+                                            >
+                                              {t}
+                                            </button>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+
+                                    {/* Confirm */}
+                                    <button
+                                      onClick={() => handleReschedule(req.id)}
+                                      disabled={!rescheduleDate || !rescheduleTime}
+                                      className="w-full rounded-xl bg-gradient-primary py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed"
+                                    >
+                                      Confirmar novo horário
+                                    </button>
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
-                  )}
-                </div>
-              ))}
-            </div>
+                  );
+                })}
+              </div>
+            )}
           </motion.div>
 
           {/* Availability */}
