@@ -70,7 +70,7 @@ export default function ServiceRequestDialog({ open, onOpenChange, worker, onCon
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto p-0 gap-0 rounded-2xl border-border">
+      <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto p-0 gap-0 rounded-2xl border-border w-[calc(100%-2rem)] mx-auto sm:w-full">
         <DialogHeader className="sticky top-0 z-10 bg-background/95 backdrop-blur-xl border-b border-border px-4 py-3">
           <div className="flex items-center gap-3">
             {step === "details" && (
