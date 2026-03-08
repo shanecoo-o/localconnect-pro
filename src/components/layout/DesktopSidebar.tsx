@@ -59,7 +59,16 @@ export default function DesktopSidebar() {
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-1">
-        {publicItems.map((item) => (
+        {baseItems.map((item) => (
+          <NavButton
+            key={item.path}
+            item={item}
+            active={location.pathname === item.path}
+            onClick={() => navigate(item.path)}
+          />
+        ))}
+
+        {isAuthenticated && user?.role !== "client" && workerItems.map((item) => (
           <NavButton
             key={item.path}
             item={item}
