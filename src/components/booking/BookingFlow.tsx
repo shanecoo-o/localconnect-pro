@@ -292,8 +292,9 @@ function StepService({
   onSelect: (s: BookingService) => void;
   filterLabel?: string;
 }) {
-  // Group by category
+  // If filtered by professional, show flat list; otherwise group by category
   const grouped = useMemo(() => {
+    if (filterLabel) return null;
     const map = new Map<string, BookingService[]>();
     for (const s of services) {
       const arr = map.get(s.category) || [];
@@ -301,7 +302,31 @@ function StepService({
       map.set(s.category, arr);
     }
     return map;
-  }, [services]);
+  }, [services, filterLabel]);
+
+  const ServiceButton = ({ s }: { s: BookingService }) => (
+    <button
+      key={s.id}
+      onClick={() => onSelect(s)}
+      className={cn(
+        "w-full rounded-xl border p-3 text-left transition-all flex items-center gap-3",
+        selected?.id === s.id
+          ? "border-primary/50 bg-primary/10"
+          : "border-border bg-card hover:bg-secondary"
+      )}
+    >
+      <span className="text-xl">{s.icon}</span>
+      <div className="flex-1 min-w-0">
+        <p className="font-medium text-foreground text-sm">{s.name}</p>
+        <p className="text-xs text-muted-foreground">{s.durationMinutes} min • {s.price}</p>
+      </div>
+      {selected?.id === s.id && (
+        <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center shrink-0">
+          <Check size={12} className="text-primary-foreground" />
+        </div>
+      )}
+    </button>
+  );
 
   return (
     <div className="space-y-4">
@@ -312,36 +337,21 @@ function StepService({
           <span className="text-xs font-medium text-primary">{filterLabel}</span>
         </div>
       )}
-      {Array.from(grouped.entries()).map(([cat, svcs]) => (
-        <div key={cat}>
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{cat}</p>
-          <div className="space-y-2">
-            {svcs.map((s) => (
-              <button
-                key={s.id}
-                onClick={() => onSelect(s)}
-                className={cn(
-                  "w-full rounded-xl border p-3 text-left transition-all flex items-center gap-3",
-                  selected?.id === s.id
-                    ? "border-primary/50 bg-primary/10"
-                    : "border-border bg-card hover:bg-secondary"
-                )}
-              >
-                <span className="text-xl">{s.icon}</span>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-foreground text-sm">{s.name}</p>
-                  <p className="text-xs text-muted-foreground">{s.durationMinutes} min • {s.price}</p>
-                </div>
-                {selected?.id === s.id && (
-                  <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center shrink-0">
-                    <Check size={12} className="text-primary-foreground" />
-                  </div>
-                )}
-              </button>
-            ))}
-          </div>
+      {filterLabel ? (
+        <div className="space-y-2">
+          {services.map((s) => <ServiceButton key={s.id} s={s} />)}
         </div>
-      ))}
+      ) : (
+        grouped && Array.from(grouped.entries()).map(([cat, svcs]) => (
+          <div key={cat}>
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{cat}</p>
+            <div className="space-y-2">
+              {svcs.map((s) => <ServiceButton key={s.id} s={s} />)}
+            </div>
+          </div>
+        ))
+      )}
+
     </div>
   );
 }
