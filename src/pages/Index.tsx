@@ -97,19 +97,19 @@ export default function Index() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="p-4 md:p-6"
+            className="p-3 md:p-6"
           >
-            <div className="mb-3 flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">
-                <span className="font-semibold text-foreground">{filtered.length}</span> profissionais encontrados
+            <div className="mb-2 md:mb-3 flex items-center justify-between">
+              <p className="text-xs md:text-sm text-muted-foreground">
+                <span className="font-semibold text-foreground">{filtered.length}</span> profissionais
               </p>
-              <select className="rounded-lg border border-border bg-secondary px-3 py-1.5 text-xs text-secondary-foreground focus:outline-none">
+              <select className="rounded-lg border border-border bg-secondary px-2 md:px-3 py-1 md:py-1.5 text-[11px] md:text-xs text-secondary-foreground focus:outline-none">
                 <option>Mais próximos</option>
                 <option>Melhor rating</option>
                 <option>Mais ativos</option>
               </select>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-2.5 md:gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {filtered.map((worker, i) => (
                 <WorkerCard key={worker.id} worker={worker} index={i} />
               ))}
