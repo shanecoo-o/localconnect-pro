@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import { MessageSquare, ArrowLeft, Send, Phone, MoreVertical, Image as ImageIcon, Paperclip, X, FileText } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import AppLayout from "@/components/layout/AppLayout";
@@ -71,6 +72,7 @@ const autoReplies = [
 ];
 
 export default function Messages() {
+  const location = useLocation();
   const [activeChat, setActiveChat] = useState<string | null>(null);
   const [chats, setChats] = useState<Conversation[]>(initialConversations);
   const [input, setInput] = useState("");
@@ -79,8 +81,74 @@ export default function Messages() {
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const hasHandledState = useRef(false);
 
   const active = chats.find((c) => c.id === activeChat);
+
+  // Handle navigation state from WorkerProfile
+  useEffect(() => {
+    if (hasHandledState.current) return;
+    const state = location.state as { openChat?: string; workerCategory?: string; autoMessage?: string } | null;
+    if (!state?.openChat) return;
+    hasHandledState.current = true;
+
+    const workerName = state.openChat;
+    const category = state.workerCategory || "";
+    const autoMessage = state.autoMessage;
+
+    // Find existing chat or create new one
+    let chatId: string | null = null;
+
+    setChats((prev) => {
+      const existing = prev.find((c) => c.name === workerName);
+      if (existing) {
+        chatId = existing.id;
+        if (autoMessage) {
+          const newMsg: Message = {
+            id: `m${Date.now()}`,
+            text: autoMessage,
+            fromMe: true,
+            time: new Date().toLocaleTimeString("pt", { hour: "2-digit", minute: "2-digit" }),
+          };
+          return prev.map((c) =>
+            c.id === existing.id
+              ? { ...c, messages: [...c.messages, newMsg], lastMsg: autoMessage.slice(0, 40) + "...", time: newMsg.time }
+              : c
+          );
+        }
+        return prev;
+      }
+
+      // Create new conversation
+      const newChat: Conversation = {
+        id: `chat-${Date.now()}`,
+        name: workerName,
+        lastMsg: autoMessage ? autoMessage.slice(0, 40) + "..." : "Nova conversa",
+        time: new Date().toLocaleTimeString("pt", { hour: "2-digit", minute: "2-digit" }),
+        unread: 0,
+        category,
+        online: true,
+        messages: autoMessage
+          ? [{
+              id: `m${Date.now()}`,
+              text: autoMessage,
+              fromMe: true,
+              time: new Date().toLocaleTimeString("pt", { hour: "2-digit", minute: "2-digit" }),
+            }]
+          : [],
+      };
+      chatId = newChat.id;
+      return [newChat, ...prev];
+    });
+
+    // Open the chat after state update
+    setTimeout(() => {
+      if (chatId) setActiveChat(chatId);
+    }, 50);
+
+    // Clear navigation state
+    window.history.replaceState({}, document.title);
+  }, [location.state]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

@@ -1,13 +1,17 @@
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Star, MapPin, Clock, Zap, Phone, MessageSquare, Calendar, CheckCircle2, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
 import AppLayout from "@/components/layout/AppLayout";
 import { workers } from "@/data/mockData";
+import ServiceRequestDialog from "@/components/workers/ServiceRequestDialog";
+import { toast } from "sonner";
 
 export default function WorkerProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
   const worker = workers.find((w) => w.id === id);
+  const [serviceDialogOpen, setServiceDialogOpen] = useState(false);
 
   if (!worker) {
     return (
@@ -139,20 +143,42 @@ export default function WorkerProfile() {
           </motion.div>
 
           {/* CTA */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="flex gap-3 pb-4">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="flex flex-col sm:flex-row gap-3 pb-4">
             <button
-              onClick={() => navigate("/new-request")}
-              className="flex-1 flex items-center justify-center gap-2 rounded-2xl bg-gradient-primary py-3.5 font-display font-semibold text-primary-foreground glow-primary-sm hover:opacity-90 transition-opacity"
+              onClick={() => setServiceDialogOpen(true)}
+              className="flex-1 flex items-center justify-center gap-2 rounded-2xl bg-gradient-primary py-3.5 font-display font-semibold text-primary-foreground glow-primary-sm hover:opacity-90 transition-opacity active:scale-[0.98] min-h-[48px]"
             >
               <Zap size={18} /> Pedir Serviço
             </button>
-            <button className="flex h-[52px] w-[52px] items-center justify-center rounded-2xl border border-border bg-secondary text-muted-foreground hover:bg-surface-hover transition-colors">
-              <MessageSquare size={20} />
-            </button>
-            <button className="flex h-[52px] w-[52px] items-center justify-center rounded-2xl border border-border bg-secondary text-muted-foreground hover:bg-surface-hover transition-colors">
-              <Phone size={20} />
-            </button>
+            <div className="flex gap-3 sm:gap-3">
+              <button
+                onClick={() => {
+                  // Navigate to messages and create/open chat with this worker
+                  navigate("/messages", { state: { openChat: worker.name, workerCategory: worker.categories[0] } });
+                }}
+                className="flex-1 sm:flex-none flex h-[48px] sm:w-[52px] items-center justify-center gap-2 sm:gap-0 rounded-2xl border border-border bg-secondary text-muted-foreground hover:bg-surface-hover transition-colors active:scale-[0.98]"
+              >
+                <MessageSquare size={20} />
+                <span className="text-sm font-medium sm:hidden">Mensagem</span>
+              </button>
+              <button
+                className="flex-1 sm:flex-none flex h-[48px] sm:w-[52px] items-center justify-center gap-2 sm:gap-0 rounded-2xl border border-border bg-secondary text-muted-foreground hover:bg-surface-hover transition-colors active:scale-[0.98]"
+              >
+                <Phone size={20} />
+                <span className="text-sm font-medium sm:hidden">Ligar</span>
+              </button>
+            </div>
           </motion.div>
+
+          <ServiceRequestDialog
+            open={serviceDialogOpen}
+            onOpenChange={setServiceDialogOpen}
+            worker={worker}
+            onConfirm={(message) => {
+              toast.success("Pedido enviado por mensagem!");
+              navigate("/messages", { state: { openChat: worker.name, workerCategory: worker.categories[0], autoMessage: message } });
+            }}
+          />
         </div>
       </div>
     </AppLayout>
