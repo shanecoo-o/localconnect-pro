@@ -30,21 +30,21 @@ export default function Index() {
     <AppLayout>
       {/* Header */}
       <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-xl">
-        <div className="flex items-center justify-between px-4 py-3 md:px-6">
-          <div className="flex items-center gap-3 md:hidden">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-primary">
-              <Wrench size={16} className="text-primary-foreground" />
+        <div className="flex items-center justify-between px-3 py-2 md:px-6 md:py-3">
+          <div className="flex items-center gap-2 md:hidden">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-primary">
+              <Wrench size={14} className="text-primary-foreground" />
             </div>
-            <h1 className="font-display text-lg font-bold">BairroWorks</h1>
+            <h1 className="font-display text-base font-bold">BairroWorks</h1>
           </div>
           <div className="hidden md:block">
             <h2 className="font-display text-xl font-bold">Encontrar Profissionais</h2>
             <p className="text-sm text-muted-foreground">Serviços locais ao seu alcance</p>
           </div>
           <div className="flex items-center gap-2">
-            <button className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-secondary text-muted-foreground hover:bg-surface-hover transition-colors">
-              <Bell size={18} />
-              <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground">
+            <button className="relative flex h-8 w-8 md:h-9 md:w-9 items-center justify-center rounded-lg md:rounded-xl bg-secondary text-muted-foreground hover:bg-surface-hover transition-colors">
+              <Bell size={16} />
+              <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 md:h-4 md:w-4 items-center justify-center rounded-full bg-primary text-[8px] md:text-[9px] font-bold text-primary-foreground">
                 3
               </span>
             </button>
@@ -52,36 +52,38 @@ export default function Index() {
         </div>
 
         {/* Search */}
-        <div className="px-4 pb-3 md:px-6">
+        <div className="px-3 pb-2 md:px-6 md:pb-3">
           <div className="relative">
-            <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground md:left-3.5" />
             <input
               type="text"
               placeholder="Pesquisar serviço, bairro ou profissional..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-xl border border-border bg-secondary py-2.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-colors"
+              className="w-full rounded-lg md:rounded-xl border border-border bg-secondary py-2 md:py-2.5 pl-9 md:pl-10 pr-3 md:pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-colors"
             />
           </div>
         </div>
 
         {/* Categories + view toggle */}
-        <div className="flex items-center gap-3 px-4 pb-3 md:px-6">
-          <div className="flex-1 overflow-hidden">
+        <div className="flex items-center gap-2 px-3 pb-2 md:gap-3 md:px-6 md:pb-3">
+          <div className="flex-1 min-w-0">
             <CategoryFilter selected={selectedCategory} onSelect={setSelectedCategory} />
           </div>
-          <div className="flex shrink-0 rounded-xl border border-border bg-secondary p-0.5">
+          <div className="flex shrink-0 rounded-lg md:rounded-xl border border-border bg-secondary p-0.5">
             <button
               onClick={() => setViewMode("list")}
-              className={`rounded-lg p-2 transition-colors ${viewMode === "list" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+              className={`rounded-md md:rounded-lg p-1.5 md:p-2 transition-colors ${viewMode === "list" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
             >
-              <List size={16} />
+              <List size={14} className="md:hidden" />
+              <List size={16} className="hidden md:block" />
             </button>
             <button
               onClick={() => setViewMode("map")}
-              className={`rounded-lg p-2 transition-colors ${viewMode === "map" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+              className={`rounded-md md:rounded-lg p-1.5 md:p-2 transition-colors ${viewMode === "map" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
             >
-              <Map size={16} />
+              <Map size={14} className="md:hidden" />
+              <Map size={16} className="hidden md:block" />
             </button>
           </div>
         </div>
