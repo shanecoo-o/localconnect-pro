@@ -12,9 +12,9 @@ export default function WorkerCard({ worker, index = 0 }: { worker: Worker; inde
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05, duration: 0.3 }}
       onClick={() => navigate(`/worker/${worker.id}`)}
-      className="group cursor-pointer rounded-2xl border border-border bg-card p-4 card-hover"
+      className="group cursor-pointer rounded-xl md:rounded-2xl border border-border bg-card p-3 md:p-4 card-hover"
     >
-      <div className="flex items-start gap-3">
+      <div className="flex items-start gap-2.5 md:gap-3">
         <div className="relative">
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-secondary font-display text-xl font-bold text-primary">
             {worker.name.charAt(0)}
