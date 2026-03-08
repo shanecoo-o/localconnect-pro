@@ -194,26 +194,17 @@ export default function BookingFlow() {
           transition={{ duration: 0.2 }}
         >
           {step === 0 && (
-            <StepService
-              services={bookingServices}
-              selected={selectedService}
-              onSelect={(s) => {
-                setSelectedService(s);
-                setSelectedProfessional(null);
-                setAnyProfessional(false);
-                setSelectedDate(undefined);
-                setSelectedSlot(null);
-              }}
-            />
-          )}
-          {step === 1 && (
             <StepProfessional
-              professionals={eligiblePros}
+              professionals={professionals}
               selected={selectedProfessional}
               anySelected={anyProfessional}
               onSelect={(p) => {
                 setSelectedProfessional(p);
                 setAnyProfessional(false);
+                // Reset service if it doesn't match this professional
+                if (selectedService && !p.serviceIds.includes(selectedService.id)) {
+                  setSelectedService(null);
+                }
                 setSelectedSlot(null);
               }}
               onSelectAny={() => {
@@ -221,6 +212,18 @@ export default function BookingFlow() {
                 setSelectedProfessional(null);
                 setSelectedSlot(null);
               }}
+            />
+          )}
+          {step === 1 && (
+            <StepService
+              services={filteredServices}
+              selected={selectedService}
+              onSelect={(s) => {
+                setSelectedService(s);
+                setSelectedDate(undefined);
+                setSelectedSlot(null);
+              }}
+              filterLabel={selectedProfessional ? `Serviços de ${selectedProfessional.name}` : undefined}
             />
           )}
           {step === 2 && (
