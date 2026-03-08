@@ -164,9 +164,9 @@ export default function BookingFlow() {
         <button
           onClick={goBack}
           disabled={step === 0}
-          className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors"
+          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground disabled:opacity-0 disabled:pointer-events-none transition-all rounded-xl px-3 py-2 -ml-3 hover:bg-secondary active:scale-95 min-h-[40px] md:min-h-0 md:px-2 md:py-1"
         >
-          <ArrowLeft size={16} /> Voltar
+          <ArrowLeft size={18} className="md:w-4 md:h-4" /> Voltar
         </button>
         <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
           {STEPS[step]}
