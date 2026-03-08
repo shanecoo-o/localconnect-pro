@@ -1,6 +1,7 @@
-import { Home, Search, PlusCircle, MessageSquare, User, Settings, Wrench } from "lucide-react";
+import { Home, Search, PlusCircle, MessageSquare, User, Settings, Wrench, LogIn, LogOut } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useAuth } from "@/contexts/AuthContext";
 
 const publicItems = [
   { path: "/", icon: Home, label: "Início" },
@@ -40,9 +41,7 @@ function NavButton({ item, active, onClick }: { item: typeof publicItems[0]; act
 export default function DesktopSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
-
-  // TODO: replace with real auth state
-  const isLoggedIn = false;
+  const { isAuthenticated, user, logout } = useAuth();
 
   return (
     <aside className="hidden md:flex fixed left-0 top-0 bottom-0 z-40 w-64 flex-col border-r border-border bg-card/80 backdrop-blur-xl">
@@ -66,7 +65,7 @@ export default function DesktopSidebar() {
           />
         ))}
 
-        {isLoggedIn && (
+        {isAuthenticated && (
           <>
             <div className="my-3 mx-4 h-px bg-border" />
             {authItems.map((item) => (
@@ -81,14 +80,35 @@ export default function DesktopSidebar() {
         )}
       </nav>
 
-      <div className="border-t border-border p-4">
-        <button
-          onClick={() => navigate("/settings")}
-          className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm text-muted-foreground hover:bg-surface-hover hover:text-foreground transition-colors"
-        >
-          <Settings size={20} />
-          <span>Definições</span>
-        </button>
+      <div className="border-t border-border p-4 space-y-1">
+        {isAuthenticated ? (
+          <>
+            <div className="flex items-center gap-3 px-4 py-2 mb-1">
+              <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">
+                {user?.name?.charAt(0).toUpperCase()}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-foreground truncate">{user?.name}</p>
+                <p className="text-xs text-muted-foreground truncate">{user?.role}</p>
+              </div>
+            </div>
+            <button
+              onClick={logout}
+              className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm text-muted-foreground hover:bg-surface-hover hover:text-foreground transition-colors"
+            >
+              <LogOut size={20} />
+              <span>Sair</span>
+            </button>
+          </>
+        ) : (
+          <button
+            onClick={() => navigate("/login")}
+            className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-primary hover:bg-primary/10 transition-colors"
+          >
+            <LogIn size={20} />
+            <span>Entrar</span>
+          </button>
+        )}
       </div>
     </aside>
   );

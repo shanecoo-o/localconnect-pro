@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import WorkerProfile from "./pages/WorkerProfile";
 import NewRequest from "./pages/NewRequest";
@@ -11,6 +12,8 @@ import Dashboard from "./pages/Dashboard";
 import Messages from "./pages/Messages";
 import Profile from "./pages/Profile";
 import Booking from "./pages/Booking";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -21,17 +24,21 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/worker/:id" element={<WorkerProfile />} />
-          <Route path="/new-request" element={<NewRequest />} />
-          <Route path="/explore" element={<Explore />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/messages" element={<Messages />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/booking" element={<Booking />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AuthProvider>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/worker/:id" element={<WorkerProfile />} />
+            <Route path="/new-request" element={<NewRequest />} />
+            <Route path="/explore" element={<Explore />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/messages" element={<Messages />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/booking" element={<Booking />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
