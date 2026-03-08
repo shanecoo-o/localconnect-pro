@@ -102,11 +102,11 @@ export default function WorkerProfile() {
             <h3 className="font-display font-semibold text-foreground mb-3 flex items-center gap-2">
               <Calendar size={18} className="text-primary" /> Disponibilidade
             </h3>
-            <div className="flex flex-wrap gap-2 mb-3">
+            <div className="grid grid-cols-7 gap-1.5 mb-3">
               {["Seg", "Ter", "Qua", "Qui", "Sex", "Sab", "Dom"].map((d) => (
                 <span
                   key={d}
-                  className={`rounded-lg px-3 py-1.5 text-xs font-medium ${
+                  className={`rounded-lg py-2 text-xs font-medium text-center ${
                     worker.availability.days.includes(d)
                       ? "bg-primary/15 text-primary border border-primary/30"
                       : "bg-secondary text-muted-foreground"
