@@ -24,9 +24,10 @@ export interface Professional {
   name: string;
   avatar: string;
   serviceIds: string[];
+  specialties: string[]; // worker-defined specialties for filtering
   schedules: ProfessionalSchedule[];
-  bufferMinutes: number; // gap between appointments
-  blockedDates: string[]; // ISO dates fully blocked
+  bufferMinutes: number;
+  blockedDates: string[];
 }
 
 export type SlotStatus =
