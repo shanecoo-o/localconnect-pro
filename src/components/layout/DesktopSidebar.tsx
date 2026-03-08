@@ -3,10 +3,13 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 
-const publicItems = [
+const baseItems = [
   { path: "/", icon: Home, label: "Início" },
   { path: "/explore", icon: Search, label: "Explorar" },
   { path: "/new-request", icon: PlusCircle, label: "Novo Pedido" },
+];
+
+const workerItems = [
   { path: "/dashboard", icon: Wrench, label: "Dashboard" },
 ];
 
@@ -15,7 +18,7 @@ const authItems = [
   { path: "/profile", icon: User, label: "Perfil" },
 ];
 
-function NavButton({ item, active, onClick }: { item: typeof publicItems[0]; active: boolean; onClick: () => void }) {
+function NavButton({ item, active, onClick }: { item: typeof baseItems[0]; active: boolean; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
@@ -56,7 +59,16 @@ export default function DesktopSidebar() {
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-1">
-        {publicItems.map((item) => (
+        {baseItems.map((item) => (
+          <NavButton
+            key={item.path}
+            item={item}
+            active={location.pathname === item.path}
+            onClick={() => navigate(item.path)}
+          />
+        ))}
+
+        {isAuthenticated && user?.role !== "client" && workerItems.map((item) => (
           <NavButton
             key={item.path}
             item={item}
