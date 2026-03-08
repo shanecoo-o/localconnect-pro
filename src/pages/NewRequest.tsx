@@ -163,6 +163,12 @@ export default function NewRequest() {
             <p className="mt-2 text-center text-xs text-muted-foreground">
               O pedido será enviado para profissionais próximos
             </p>
+            <button
+              onClick={() => navigate("/booking")}
+              className="mt-3 w-full flex items-center justify-center gap-2 rounded-2xl border border-border bg-secondary py-3 text-sm font-medium text-foreground hover:bg-surface-hover transition-colors"
+            >
+              <Calendar size={16} /> Ou agende com horário específico
+            </button>
           </motion.div>
         </div>
       </div>
