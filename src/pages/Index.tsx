@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { Map, List, Search, Bell, Wrench } from "lucide-react";
+import { Map, List, Search, Bell, Wrench, LogIn } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import AppLayout from "@/components/layout/AppLayout";
 import WorkerCard from "@/components/workers/WorkerCard";
@@ -8,6 +10,8 @@ import WorkerMap from "@/components/map/WorkerMap";
 import { workers, categories } from "@/data/mockData";
 
 export default function Index() {
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -42,12 +46,22 @@ export default function Index() {
             <p className="text-sm text-muted-foreground">Serviços locais ao seu alcance</p>
           </div>
           <div className="flex items-center gap-2">
-            <button className="relative flex h-8 w-8 md:h-9 md:w-9 items-center justify-center rounded-lg md:rounded-xl bg-secondary text-muted-foreground hover:bg-surface-hover transition-colors">
-              <Bell size={16} />
-              <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 md:h-4 md:w-4 items-center justify-center rounded-full bg-primary text-[8px] md:text-[9px] font-bold text-primary-foreground">
-                3
-              </span>
-            </button>
+            {isAuthenticated ? (
+              <button className="relative flex h-8 w-8 md:h-9 md:w-9 items-center justify-center rounded-lg md:rounded-xl bg-secondary text-muted-foreground hover:bg-surface-hover transition-colors">
+                <Bell size={16} />
+                <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 md:h-4 md:w-4 items-center justify-center rounded-full bg-primary text-[8px] md:text-[9px] font-bold text-primary-foreground">
+                  3
+                </span>
+              </button>
+            ) : (
+              <button
+                onClick={() => navigate("/login")}
+                className="flex h-8 md:h-9 items-center gap-1.5 rounded-xl bg-primary/15 px-3 text-xs font-medium text-primary hover:bg-primary/25 transition-colors"
+              >
+                <LogIn size={14} />
+                <span>Entrar</span>
+              </button>
+            )}
           </div>
         </div>
 
