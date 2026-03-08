@@ -1,8 +1,11 @@
 import { useState } from "react";
-import { TrendingUp, CheckCircle2, Star, Clock, Zap, Calendar, Wrench } from "lucide-react";
+import { TrendingUp, CheckCircle2, Star, Clock, Zap, Calendar, Wrench, Plus, X } from "lucide-react";
 import { motion } from "framer-motion";
 import AppLayout from "@/components/layout/AppLayout";
 import { serviceRequests } from "@/data/mockData";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 
 const stats = [
   { label: "Pedidos esta semana", value: "12", icon: Zap, change: "+3" },
@@ -12,11 +15,35 @@ const stats = [
 ];
 
 const days = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sab", "Dom"];
-const hours = ["08:00-12:00", "14:00-18:00", "19:00-22:00"];
+const defaultHours = ["08:00-12:00", "14:00-18:00", "19:00-22:00"];
 
 export default function Dashboard() {
   const [selectedDays, setSelectedDays] = useState(["Seg", "Ter", "Qua", "Qui", "Sex"]);
+  const [customHours, setCustomHours] = useState<string[]>(defaultHours);
   const [selectedHours, setSelectedHours] = useState(["08:00-12:00", "14:00-18:00"]);
+  const [newStart, setNewStart] = useState("08:00");
+  const [newEnd, setNewEnd] = useState("12:00");
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  const addCustomHour = () => {
+    const slot = `${newStart}-${newEnd}`;
+    if (newStart >= newEnd) {
+      toast.error("Hora de início deve ser antes da hora de fim");
+      return;
+    }
+    if (customHours.includes(slot)) {
+      toast.error("Este horário já existe");
+      return;
+    }
+    setCustomHours((prev) => [...prev, slot]);
+    setDialogOpen(false);
+    toast.success(`Horário ${slot} adicionado`);
+  };
+
+  const removeCustomHour = (h: string) => {
+    setCustomHours((prev) => prev.filter((x) => x !== h));
+    setSelectedHours((prev) => prev.filter((x) => x !== h));
+  };
 
   const toggleDay = (d: string) =>
     setSelectedDays((prev) => (prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]));
