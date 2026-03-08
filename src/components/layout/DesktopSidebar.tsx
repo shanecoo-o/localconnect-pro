@@ -24,9 +24,6 @@ const workerClientItems = [
 const adminItems = [
   { path: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { path: "/admin/users", icon: Users, label: "Utilizadores" },
-  { path: "/admin/categories", icon: FolderOpen, label: "Categorias" },
-  { path: "/admin/reports", icon: BarChart3, label: "Relatórios" },
-  { path: "/admin/settings", icon: Settings, label: "Configurações" },
 ];
 
 const commonAuthItems = [
