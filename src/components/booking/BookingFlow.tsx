@@ -35,8 +35,8 @@ import {
 } from "@/lib/slotEngine";
 
 const STEPS = [
-  "Serviço",
   "Profissional",
+  "Serviço",
   "Data",
   "Horário",
   "Resumo",
