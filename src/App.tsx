@@ -41,9 +41,6 @@ const App = () => (
             <Route path="/register" element={<Register />} />
             <Route path="/worker-requests" element={<ProtectedRoute><WorkerRequests /></ProtectedRoute>} />
             <Route path="/admin/users" element={<ProtectedRoute><AdminUsers /></ProtectedRoute>} />
-            <Route path="/admin/categories" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/admin/reports" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/admin/settings" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

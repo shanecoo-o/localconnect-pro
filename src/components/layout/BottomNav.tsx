@@ -1,4 +1,4 @@
-import { Home, Search, PlusCircle, LayoutDashboard, ClipboardList, MessageSquare, User, Users, BarChart3, Settings } from "lucide-react";
+import { Home, Search, PlusCircle, LayoutDashboard, ClipboardList, MessageSquare, User, Users } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
@@ -31,7 +31,7 @@ const adminNav = [
   { path: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { path: "/admin/users", icon: Users, label: "Users" },
   { path: "/messages", icon: MessageSquare, label: "Chat" },
-  { path: "/admin/settings", icon: Settings, label: "Config" },
+  { path: "/profile", icon: User, label: "Perfil" },
 ];
 
 export default function BottomNav() {
