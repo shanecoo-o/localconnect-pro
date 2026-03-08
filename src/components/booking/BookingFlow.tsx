@@ -390,24 +390,39 @@ function StepProfessional({
           key={p.id}
           onClick={() => onSelect(p)}
           className={cn(
-            "w-full rounded-xl border p-3 text-left transition-all flex items-center gap-3",
+            "w-full rounded-xl border p-3 text-left transition-all",
             selected?.id === p.id
               ? "border-primary/50 bg-primary/10"
               : "border-border bg-card hover:bg-secondary"
           )}
         >
-          <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center">
-            <User size={18} className="text-muted-foreground" />
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center shrink-0">
+              <User size={18} className="text-muted-foreground" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-foreground text-sm">{p.name}</p>
+              <p className="text-xs text-muted-foreground">
+                {p.schedules.map((s) => s.dayOfWeek).join(", ")}
+              </p>
+            </div>
+            {selected?.id === p.id && (
+              <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center shrink-0">
+                <Check size={12} className="text-primary-foreground" />
+              </div>
+            )}
           </div>
-          <div className="flex-1">
-            <p className="font-medium text-foreground text-sm">{p.name}</p>
-            <p className="text-xs text-muted-foreground">
-              {p.schedules.map((s) => s.dayOfWeek).join(", ")}
-            </p>
-          </div>
-          {selected?.id === p.id && (
-            <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center shrink-0">
-              <Check size={12} className="text-primary-foreground" />
+          {/* Specialties */}
+          {p.specialties.length > 0 && (
+            <div className="mt-2 ml-13 flex flex-wrap gap-1.5">
+              {p.specialties.map((spec) => (
+                <span
+                  key={spec}
+                  className="rounded-full bg-secondary px-2.5 py-0.5 text-[10px] font-medium text-muted-foreground"
+                >
+                  {spec}
+                </span>
+              ))}
             </div>
           )}
         </button>
