@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import { pt } from "date-fns/locale";
 import {
   ClipboardList, MapPin, Clock, MessageSquare, CheckCircle2,
-  XCircle, Play, Eye, Bell, RotateCcw, X, ChevronDown,
+  XCircle, Play, Eye, Bell, RotateCcw, ChevronDown,
   Calendar as CalendarIcon, User, Search, Check, ChevronsUpDown,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -16,6 +16,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 type TabKey = "all" | "new" | "accepted" | "in_progress" | "completed" | "cancelled";
 type RequestStatus = ServiceRequest["status"];
@@ -368,30 +370,17 @@ export default function WorkerRequests() {
                             </button>
                           )}
 
-                          {/* ── Reschedule panel (inline) ── */}
-                          <AnimatePresence>
-                            {isRes && (
-                              <motion.div
-                                key="reschedule"
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{ height: "auto", opacity: 1 }}
-                                exit={{ height: 0, opacity: 0 }}
-                                transition={{ duration: 0.2 }}
-                                className="overflow-hidden"
-                              >
-                                <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 space-y-4">
-                                  <div className="flex items-center justify-between">
-                                    <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                                      <RotateCcw size={14} className="text-primary" /> Remarcar horário
-                                    </h4>
-                                    <button
-                                      onClick={() => setRescheduleOpen(null)}
-                                      className="h-7 w-7 rounded-lg flex items-center justify-center hover:bg-secondary transition-colors"
-                                    >
-                                      <X size={14} className="text-muted-foreground" />
-                                    </button>
-                                  </div>
+                          {/* ── Reschedule Dialog ── */}
+                          <Dialog open={isRes} onOpenChange={(open) => !open && setRescheduleOpen(null)}>
+                            <DialogContent className="max-w-md max-h-[85vh] p-0 gap-0 rounded-2xl w-[calc(100%-2rem)] mx-auto sm:w-full overflow-hidden flex flex-col">
+                              <DialogHeader className="p-4 border-b border-border bg-background">
+                                <DialogTitle className="flex items-center gap-2 text-base font-semibold">
+                                  <RotateCcw size={16} className="text-primary" /> Remarcar horário
+                                </DialogTitle>
+                              </DialogHeader>
 
+                              <ScrollArea className="flex-1 overflow-y-auto">
+                                <div className="p-4 space-y-4">
                                   {/* Calendar */}
                                   <div className="rounded-xl border border-border bg-card p-2 flex justify-center">
                                     <Calendar
@@ -412,7 +401,7 @@ export default function WorkerRequests() {
                                           key={slot}
                                           onClick={() => setRescheduleTime(slot)}
                                           className={cn(
-                                            "rounded-lg py-1.5 text-xs font-medium transition-colors border",
+                                            "rounded-lg py-2 text-xs font-medium transition-colors border",
                                             rescheduleTime === slot
                                               ? "bg-primary text-primary-foreground border-primary"
                                               : "bg-secondary text-muted-foreground border-border hover:bg-surface-hover"
@@ -428,14 +417,14 @@ export default function WorkerRequests() {
                                   <button
                                     onClick={() => handleReschedule(req.id)}
                                     disabled={!rescheduleDate || !rescheduleTime}
-                                    className="w-full rounded-xl bg-gradient-primary py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed min-h-[44px]"
+                                    className="w-full rounded-xl bg-gradient-primary py-3 text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed min-h-[44px]"
                                   >
                                     Confirmar Remarcação
                                   </button>
                                 </div>
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
+                              </ScrollArea>
+                            </DialogContent>
+                          </Dialog>
 
                         </div>
                       </motion.div>
