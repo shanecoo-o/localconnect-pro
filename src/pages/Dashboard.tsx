@@ -43,6 +43,95 @@ export default function Dashboard() {
   const [rescheduleOpen, setRescheduleOpen] = useState<string | null>(null);
   const [rescheduleDate, setRescheduleDate] = useState<Date | undefined>();
   const [rescheduleTime, setRescheduleTime] = useState<string | null>(null);
+  const [newlyArrivedIds, setNewlyArrivedIds] = useState<Set<string>>(new Set());
+  const [hasPulse, setHasPulse] = useState(false);
+  const poolIndexRef = useRef(0);
+
+  const incomingPool: ServiceRequest[] = [
+    {
+      id: "sim-1",
+      clientId: "c10",
+      clientName: "Beatriz Monteiro",
+      category: "Canalizador",
+      description: "Torneira da casa de banho a pingar. Preciso de reparação.",
+      location: { lat: -8.840, lng: 13.231, bairro: "Talatona" },
+      requestedDate: "2026-03-10",
+      timeWindow: "10:00-12:00",
+      urgency: "medium",
+      status: "pending_broadcast",
+      createdAt: new Date().toISOString(),
+      countdown: 90,
+    },
+    {
+      id: "sim-2",
+      clientId: "c11",
+      clientName: "Rui Pacheco",
+      category: "Canalizador",
+      description: "Instalação de esquentador novo. Cozinha T2.",
+      location: { lat: -8.828, lng: 13.245, bairro: "Kilamba" },
+      requestedDate: "2026-03-11",
+      timeWindow: "14:00-17:00",
+      urgency: "low",
+      status: "pending_broadcast",
+      createdAt: new Date().toISOString(),
+    },
+    {
+      id: "sim-3",
+      clientId: "c12",
+      clientName: "Filomena Dias",
+      category: "Canalizador",
+      description: "Entupimento no WC. Urgente, água a transbordar.",
+      location: { lat: -8.835, lng: 13.238, bairro: "Benfica" },
+      requestedDate: "2026-03-09",
+      timeWindow: "08:00-10:00",
+      urgency: "high",
+      status: "pending_broadcast",
+      createdAt: new Date().toISOString(),
+      countdown: 60,
+    },
+    {
+      id: "sim-4",
+      clientId: "c13",
+      clientName: "André Lopes",
+      category: "Canalizador",
+      description: "Substituição de canos antigos no quintal.",
+      location: { lat: -8.820, lng: 13.250, bairro: "Viana" },
+      requestedDate: "2026-03-12",
+      timeWindow: "09:00-12:00",
+      urgency: "low",
+      status: "pending_broadcast",
+      createdAt: new Date().toISOString(),
+    },
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const pool = incomingPool;
+      const idx = poolIndexRef.current % pool.length;
+      const next = pool[idx];
+      poolIndexRef.current += 1;
+
+      setRequests((prev) => {
+        if (prev.find((r) => r.id === next.id)) return prev;
+        return [next, ...prev];
+      });
+
+      setNewlyArrivedIds((prev) => new Set(prev).add(next.id));
+      setHasPulse(true);
+
+      setTimeout(() => {
+        setNewlyArrivedIds((prev) => {
+          const s = new Set(prev);
+          s.delete(next.id);
+          return s;
+        });
+        setHasPulse(false);
+      }, 3000);
+    }, 8000);
+
+    return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const addCustomHour = () => {
     const slot = `${newStart}-${newEnd}`;
