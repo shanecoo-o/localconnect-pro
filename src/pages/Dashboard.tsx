@@ -256,11 +256,24 @@ export default function Dashboard() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="rounded-2xl border border-border bg-card p-4 md:p-5">
             <h3 className="font-display font-semibold text-foreground mb-3 flex items-center gap-2">
               <Zap size={18} className="text-primary" /> Pedidos Recebidos
-              {incomingRequests.length > 0 && (
-                <span className="ml-auto rounded-full bg-primary/15 px-2 py-0.5 text-xs font-semibold text-primary">
-                  {incomingRequests.length}
-                </span>
-              )}
+              <span className="ml-auto flex items-center gap-2">
+                {hasPulse && (
+                  <motion.span
+                    key="bell"
+                    initial={{ scale: 0.5, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.5, opacity: 0 }}
+                    className="flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-semibold text-amber-400"
+                  >
+                    <BellRing size={11} className="animate-bounce" /> Novo
+                  </motion.span>
+                )}
+                {incomingRequests.length > 0 && (
+                  <span className="rounded-full bg-primary/15 px-2 py-0.5 text-xs font-semibold text-primary">
+                    {incomingRequests.length}
+                  </span>
+                )}
+              </span>
             </h3>
 
             {incomingRequests.length === 0 ? (
@@ -270,13 +283,26 @@ export default function Dashboard() {
               </div>
             ) : (
               <div className="space-y-3">
+                <AnimatePresence initial={false}>
                 {incomingRequests.map((req) => {
                   const statusBadge = getStatusBadge(req.status);
                   const isExpanded = expandedRequest === req.id;
                   const isRescheduling = rescheduleOpen === req.id;
+                  const isNew = newlyArrivedIds.has(req.id);
 
                   return (
-                    <div key={req.id} className="rounded-xl border border-border bg-secondary overflow-hidden">
+                    <motion.div
+                      key={req.id}
+                      layout
+                      initial={{ opacity: 0, y: -16, scale: 0.97 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                      className={cn(
+                        "rounded-xl border bg-secondary overflow-hidden transition-colors duration-700",
+                        isNew ? "border-amber-500/50 shadow-[0_0_0_2px_hsl(var(--primary)/0.15)]" : "border-border"
+                      )}
+                    >
                       {/* Main info row - clickable on mobile */}
                       <button
                         onClick={() => setExpandedRequest(isExpanded ? null : req.id)}
