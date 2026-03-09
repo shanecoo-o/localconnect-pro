@@ -4,7 +4,7 @@ import { pt } from "date-fns/locale";
 import {
   ClipboardList, MapPin, Clock, MessageSquare, CheckCircle2,
   XCircle, Play, Eye, Bell, RotateCcw, X, ChevronDown,
-  Calendar as CalendarIcon, User, Search, Filter,
+  Calendar as CalendarIcon, User, Search, Check, ChevronsUpDown,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import AppLayout from "@/components/layout/AppLayout";
@@ -13,6 +13,9 @@ import { Calendar } from "@/components/ui/calendar";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
 
 type TabKey = "all" | "new" | "accepted" | "in_progress" | "completed" | "cancelled";
 type RequestStatus = ServiceRequest["status"];
