@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
-import { TrendingUp, CheckCircle2, Star, Clock, Zap, Calendar, Wrench, Plus, X, Play, XCircle, MessageSquare, RotateCcw, ChevronDown, MapPin } from "lucide-react";
+import { TrendingUp, CheckCircle2, Star, Clock, Zap, Calendar, Wrench, Plus, X, Play, XCircle, MessageSquare, RotateCcw, ChevronDown, BellRing } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import AppLayout from "@/components/layout/AppLayout";
 import { serviceRequests, type ServiceRequest } from "@/data/mockData";
