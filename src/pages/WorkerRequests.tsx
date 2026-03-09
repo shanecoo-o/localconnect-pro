@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import { pt } from "date-fns/locale";
 import {
   ClipboardList, MapPin, Clock, MessageSquare, CheckCircle2,
-  XCircle, Play, Eye, Bell, RotateCcw, X, ChevronDown,
+  XCircle, Play, Eye, Bell, RotateCcw, ChevronDown,
   Calendar as CalendarIcon, User, Search, Check, ChevronsUpDown,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
