@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { format } from "date-fns";
 import { pt } from "date-fns/locale";
-import { TrendingUp, CheckCircle2, Star, Clock, Zap, Calendar, Wrench, Plus, X, Play, XCircle, MessageSquare, RotateCcw, ChevronDown, MapPin } from "lucide-react";
+import { TrendingUp, CheckCircle2, Star, Clock, Zap, Calendar, Wrench, Plus, X, Play, XCircle, MessageSquare, RotateCcw, ChevronDown, BellRing } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import AppLayout from "@/components/layout/AppLayout";
 import { serviceRequests, type ServiceRequest } from "@/data/mockData";
@@ -43,6 +43,95 @@ export default function Dashboard() {
   const [rescheduleOpen, setRescheduleOpen] = useState<string | null>(null);
   const [rescheduleDate, setRescheduleDate] = useState<Date | undefined>();
   const [rescheduleTime, setRescheduleTime] = useState<string | null>(null);
+  const [newlyArrivedIds, setNewlyArrivedIds] = useState<Set<string>>(new Set());
+  const [hasPulse, setHasPulse] = useState(false);
+  const poolIndexRef = useRef(0);
+
+  const incomingPool: ServiceRequest[] = [
+    {
+      id: "sim-1",
+      clientId: "c10",
+      clientName: "Beatriz Monteiro",
+      category: "Canalizador",
+      description: "Torneira da casa de banho a pingar. Preciso de reparação.",
+      location: { lat: -8.840, lng: 13.231, bairro: "Talatona" },
+      requestedDate: "2026-03-10",
+      timeWindow: "10:00-12:00",
+      urgency: "medium",
+      status: "pending_broadcast",
+      createdAt: new Date().toISOString(),
+      countdown: 90,
+    },
+    {
+      id: "sim-2",
+      clientId: "c11",
+      clientName: "Rui Pacheco",
+      category: "Canalizador",
+      description: "Instalação de esquentador novo. Cozinha T2.",
+      location: { lat: -8.828, lng: 13.245, bairro: "Kilamba" },
+      requestedDate: "2026-03-11",
+      timeWindow: "14:00-17:00",
+      urgency: "low",
+      status: "pending_broadcast",
+      createdAt: new Date().toISOString(),
+    },
+    {
+      id: "sim-3",
+      clientId: "c12",
+      clientName: "Filomena Dias",
+      category: "Canalizador",
+      description: "Entupimento no WC. Urgente, água a transbordar.",
+      location: { lat: -8.835, lng: 13.238, bairro: "Benfica" },
+      requestedDate: "2026-03-09",
+      timeWindow: "08:00-10:00",
+      urgency: "high",
+      status: "pending_broadcast",
+      createdAt: new Date().toISOString(),
+      countdown: 60,
+    },
+    {
+      id: "sim-4",
+      clientId: "c13",
+      clientName: "André Lopes",
+      category: "Canalizador",
+      description: "Substituição de canos antigos no quintal.",
+      location: { lat: -8.820, lng: 13.250, bairro: "Viana" },
+      requestedDate: "2026-03-12",
+      timeWindow: "09:00-12:00",
+      urgency: "low",
+      status: "pending_broadcast",
+      createdAt: new Date().toISOString(),
+    },
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const pool = incomingPool;
+      const idx = poolIndexRef.current % pool.length;
+      const next = pool[idx];
+      poolIndexRef.current += 1;
+
+      setRequests((prev) => {
+        if (prev.find((r) => r.id === next.id)) return prev;
+        return [next, ...prev];
+      });
+
+      setNewlyArrivedIds((prev) => new Set(prev).add(next.id));
+      setHasPulse(true);
+
+      setTimeout(() => {
+        setNewlyArrivedIds((prev) => {
+          const s = new Set(prev);
+          s.delete(next.id);
+          return s;
+        });
+        setHasPulse(false);
+      }, 3000);
+    }, 8000);
+
+    return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const addCustomHour = () => {
     const slot = `${newStart}-${newEnd}`;
@@ -167,11 +256,24 @@ export default function Dashboard() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="rounded-2xl border border-border bg-card p-4 md:p-5">
             <h3 className="font-display font-semibold text-foreground mb-3 flex items-center gap-2">
               <Zap size={18} className="text-primary" /> Pedidos Recebidos
-              {incomingRequests.length > 0 && (
-                <span className="ml-auto rounded-full bg-primary/15 px-2 py-0.5 text-xs font-semibold text-primary">
-                  {incomingRequests.length}
-                </span>
-              )}
+              <span className="ml-auto flex items-center gap-2">
+                {hasPulse && (
+                  <motion.span
+                    key="bell"
+                    initial={{ scale: 0.5, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.5, opacity: 0 }}
+                    className="flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-semibold text-amber-400"
+                  >
+                    <BellRing size={11} className="animate-bounce" /> Novo
+                  </motion.span>
+                )}
+                {incomingRequests.length > 0 && (
+                  <span className="rounded-full bg-primary/15 px-2 py-0.5 text-xs font-semibold text-primary">
+                    {incomingRequests.length}
+                  </span>
+                )}
+              </span>
             </h3>
 
             {incomingRequests.length === 0 ? (
@@ -181,13 +283,26 @@ export default function Dashboard() {
               </div>
             ) : (
               <div className="space-y-3">
+                <AnimatePresence initial={false}>
                 {incomingRequests.map((req) => {
                   const statusBadge = getStatusBadge(req.status);
                   const isExpanded = expandedRequest === req.id;
                   const isRescheduling = rescheduleOpen === req.id;
+                  const isNew = newlyArrivedIds.has(req.id);
 
                   return (
-                    <div key={req.id} className="rounded-xl border border-border bg-secondary overflow-hidden">
+                    <motion.div
+                      key={req.id}
+                      layout
+                      initial={{ opacity: 0, y: -16, scale: 0.97 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                      className={cn(
+                        "rounded-xl border bg-secondary overflow-hidden transition-colors duration-700",
+                        isNew ? "border-amber-500/50 shadow-[0_0_0_2px_hsl(var(--primary)/0.15)]" : "border-border"
+                      )}
+                    >
                       {/* Main info row - clickable on mobile */}
                       <button
                         onClick={() => setExpandedRequest(isExpanded ? null : req.id)}
@@ -367,9 +482,10 @@ export default function Dashboard() {
                           </motion.div>
                         )}
                       </AnimatePresence>
-                    </div>
+                    </motion.div>
                   );
                 })}
+                </AnimatePresence>
               </div>
             )}
           </motion.div>
