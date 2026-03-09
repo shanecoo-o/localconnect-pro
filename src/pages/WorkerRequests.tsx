@@ -52,6 +52,7 @@ const timeSlots = [
 
 export default function WorkerRequests() {
   const [activeTab, setActiveTab]     = useState<TabKey>("new");
+  const [filterOpen, setFilterOpen]   = useState(false);
   const [requests, setRequests]       = useState<ServiceRequest[]>(serviceRequests);
   const [expanded, setExpanded]       = useState<string | null>(null);
   const [rescheduleOpen, setRescheduleOpen] = useState<string | null>(null);
