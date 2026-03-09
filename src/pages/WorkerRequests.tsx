@@ -151,36 +151,65 @@ export default function WorkerRequests() {
             </AnimatePresence>
           </div>
 
-          {/* ── Tab bar ───────────────────────────────────────── */}
-          <div className="flex overflow-x-auto scrollbar-none px-4 md:px-6 gap-1 pb-2">
-            {tabs.map((tab) => {
-              const count = requests.filter((r) => tab.statuses.includes(r.status)).length;
-              const isActive = activeTab === tab.key;
-              return (
-                <button
-                  key={tab.key}
-                  onClick={() => setActiveTab(tab.key)}
-                  className={cn(
-                    "shrink-0 flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition-colors",
-                    isActive
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-secondary text-muted-foreground hover:bg-surface-hover"
-                  )}
+          {/* ── Filter combobox ───────────────────────────────── */}
+          <div className="px-4 md:px-6 pb-3">
+            <Popover open={filterOpen} onOpenChange={setFilterOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={filterOpen}
+                  className="w-full justify-between rounded-xl border-border bg-secondary text-sm hover:bg-surface-hover h-9"
                 >
-                  {tab.label}
-                  {count > 0 && (
-                    <span
-                      className={cn(
-                        "rounded-full px-1.5 py-0.5 text-[10px] font-bold",
-                        isActive ? "bg-primary-foreground/20 text-primary-foreground" : "bg-border text-muted-foreground"
-                      )}
-                    >
-                      {count}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
+                  <span className="flex items-center gap-2">
+                    {(() => {
+                      const tab = tabs.find((t) => t.key === activeTab)!;
+                      const count = requests.filter((r) => tab.statuses.includes(r.status)).length;
+                      return (
+                        <>
+                          {tab.label}
+                          {count > 0 && (
+                            <span className="rounded-full bg-primary/15 text-primary px-1.5 py-0.5 text-[10px] font-bold">
+                              {count}
+                            </span>
+                          )}
+                        </>
+                      );
+                    })()}
+                  </span>
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                <Command>
+                  <CommandList>
+                    <CommandEmpty>Nenhuma opção encontrada.</CommandEmpty>
+                    <CommandGroup>
+                      {tabs.map((tab) => {
+                        const count = requests.filter((r) => tab.statuses.includes(r.status)).length;
+                        return (
+                          <CommandItem
+                            key={tab.key}
+                            onSelect={() => {
+                              setActiveTab(tab.key);
+                              setFilterOpen(false);
+                            }}
+                          >
+                            <Check
+                              className={cn("mr-2 h-4 w-4", activeTab === tab.key ? "opacity-100" : "opacity-0")}
+                            />
+                            {tab.label}
+                            {count > 0 && (
+                              <span className="ml-auto text-xs text-muted-foreground">{count}</span>
+                            )}
+                          </CommandItem>
+                        );
+                      })}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
 
